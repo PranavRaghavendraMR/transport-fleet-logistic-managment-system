@@ -150,7 +150,21 @@ python test_live_system.py
 
 ---
 
-## 8. University Project Details
+## 8. Cloud Serverless & Vercel Deployment
+
+The project is fully configured for deployment on **Vercel** with Python serverless functions, WhiteNoise static asset serving, and cloud PostgreSQL integration.
+
+### Deployment Files
+- `api/index.py`: Serverless WSGI entry point
+- `vercel.json`: Deployment routes and python runtime configuration
+- `build_files.sh`: Automated dependency installation and `collectstatic` script
+- `DEPLOYMENT.md`: Comprehensive cloud architecture and environment setup guide
+
+For complete step-by-step cloud deployment instructions, see [DEPLOYMENT.md](file:///d:/pranav/transport-fms/DEPLOYMENT.md).
+
+---
+
+## 9. University Project Details
 
 - **Institution:** Chanakya University, Bengaluru
 - **School:** School of Engineering
@@ -158,3 +172,5 @@ python test_live_system.py
 - **Semester:** V Semester
 - **Subject:** Full Stack Development (DAT501)
 - **Candidate:** Pranavraghavendra M R (Reg. No: 24UG00220)
+- **GitHub Repository:** [https://github.com/PranavRaghavendraMR/transport-fleet-logistic-managment-system.git](https://github.com/PranavRaghavendraMR/transport-fleet-logistic-managment-system.git)
+
