@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Route: {{ route.route_code }}{% endblock %}
+{% block page_title %}Route Dossier: {{ route.route_code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'routing:route_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="fw-bold mb-0 text-navy">{{ route.route_code }}</h4>
+            <span class="badge bg-{{ route.status_badge_class }} me-2">{{ route.status }}</span>
+            <span class="text-muted small">{{ route.starting_location }} &rarr; {{ route.destination }}</span>
+        </div>
+    </div>
+
+    <!-- Quick Status Transition Form -->
+    <div class="d-flex gap-2">
+        {% if is_fleet_manager %}
+            {% if route.status == 'Scheduled' %}
+            <form method="post" action="{% url 'routing:route_status_update' route.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="In Transit">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-play-circle me-1"></i> Start Transit
+                </button>
+            </form>
+            {% elif route.status == 'In Transit' %}
+            <form method="post" action="{% url 'routing:route_status_update' route.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="Completed">
+                <button type="submit" class="btn btn-sm btn-success">
+                    <i class="bi bi-check2-circle me-1"></i> Mark as Completed
+                </button>
+            </form>
+            {% endif %}
+
+            {% if route.status != 'Completed' and route.status != 'Cancelled' %}
+            <form method="post" action="{% url 'routing:route_status_update' route.pk %}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this route?');">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="Cancelled">
+                <button type="submit" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Route
+                </button>
+            </form>
+            {% endif %}
+
+            <a href="{% url 'routing:route_update' route.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+        {% endif %}
+
+        {% if is_admin and route.status != 'In Transit' %}
+        <a href="{% url 'routing:route_delete' route.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Route Info -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Journey & Waybill Details</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border">
+                            <small class="text-muted d-block mb-1">Origin Point</small>
+                            <h5 class="fw-bold text-navy mb-0"><i class="bi bi-geo-alt text-primary me-2"></i>{{ route.starting_location }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border">
+                            <small class="text-muted d-block mb-1">Destination Hub</small>
+                            <h5 class="fw-bold text-navy mb-0"><i class="bi bi-flag text-danger me-2"></i>{{ route.destination }}</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded">
+                            <small class="text-muted">Route Distance</small>
+                            <div class="fs-5 fw-bold text-navy">{{ route.distance_km }} km</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded">
+                            <small class="text-muted">Estimated Duration</small>
+                            <div class="fs-5 fw-bold text-navy">{{ route.estimated_duration_hours }} Hours</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border rounded">
+                            <small class="text-muted">Current Status</small>
+                            <div><span class="badge bg-{{ route.status_badge_class }} fs-6">{{ route.status }}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold text-navy small">Cargo Notes & Instructions:</label>
+                    <p class="text-muted bg-light p-3 rounded mb-0">{{ route.description|default:"Standard freight consignment." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Vehicle & Driver Assignment Details -->
+    <div class="col-lg-4">
+        <!-- Vehicle Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-truck text-primary me-2"></i>Assigned Vehicle</h6>
+            </div>
+            <div class="card-body p-3">
+                <h5 class="fw-bold text-navy mb-1">
+                    <a href="{% url 'fleet:vehicle_detail' route.vehicle.pk %}" class="text-decoration-none">{{ route.vehicle.registration_number }}</a>
+                </h5>
+                <p class="text-muted small mb-2">{{ route.vehicle.manufacturer }} {{ route.vehicle.model_name }} ({{ route.vehicle.vehicle_type }})</p>
+                <div class="small mb-1">Capacity: <strong>{{ route.vehicle.capacity_kg }} kg</strong></div>
+                <div class="small mb-1">Fuel: <strong>{{ route.vehicle.fuel_type }}</strong></div>
+                <div class="small">Odometer: <strong>{{ route.vehicle.current_odometer }} km</strong></div>
+            </div>
+        </div>
+
+        <!-- Driver Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-person-badge text-primary me-2"></i>Assigned Driver</h6>
+            </div>
+            <div class="card-body p-3">
+                <h5 class="fw-bold text-navy mb-1">
+                    <a href="{% url 'fleet:driver_detail' route.driver.pk %}" class="text-decoration-none">{{ route.driver.name }}</a>
+                </h5>
+                <p class="text-muted small mb-2"><i class="bi bi-telephone me-1"></i>{{ route.driver.contact_number }}</p>
+                <div class="small mb-1">Licence: <code>{{ route.driver.license_number }}</code></div>
+                <div class="small mb-1">Licence Expiry: <strong>{{ route.driver.license_expiry_date|date:"d M Y" }}</strong></div>
+                <div class="small">Experience: <strong>{{ route.driver.experience_years }} Years</strong></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

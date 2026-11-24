@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="form-card">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-navy"><i class="bi bi-signpost-split me-2 text-primary"></i>{{ title }}</h5>
+                <a href="{% url 'routing:route_list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Routes
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.route_code.id_for_label }}" class="form-label">Route Code *</label>
+                        {{ form.route_code }}
+                        {% if form.route_code.errors %}<div class="text-danger small mt-1">{{ form.route_code.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.starting_location.id_for_label }}" class="form-label">Starting Location (Origin) *</label>
+                        {{ form.starting_location }}
+                        {% if form.starting_location.errors %}<div class="text-danger small mt-1">{{ form.starting_location.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.destination.id_for_label }}" class="form-label">Destination Hub *</label>
+                        {{ form.destination }}
+                        {% if form.destination.errors %}<div class="text-danger small mt-1">{{ form.destination.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.distance_km.id_for_label }}" class="form-label">Distance (km) *</label>
+                        {{ form.distance_km }}
+                        {% if form.distance_km.errors %}<div class="text-danger small mt-1">{{ form.distance_km.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.estimated_duration_hours.id_for_label }}" class="form-label">Estimated Duration (Hours) *</label>
+                        {{ form.estimated_duration_hours }}
+                        {% if form.estimated_duration_hours.errors %}<div class="text-danger small mt-1">{{ form.estimated_duration_hours.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.vehicle.id_for_label }}" class="form-label">Assigned Vehicle *</label>
+                        {{ form.vehicle }}
+                        <small class="text-muted">Only Available vehicles ready for road deployment are eligible.</small>
+                        {% if form.vehicle.errors %}<div class="text-danger small mt-1">{{ form.vehicle.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.driver.id_for_label }}" class="form-label">Assigned Driver *</label>
+                        {{ form.driver }}
+                        <small class="text-muted">Only active drivers with valid unexpired licence are shown.</small>
+                        {% if form.driver.errors %}<div class="text-danger small mt-1">{{ form.driver.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.departure_datetime.id_for_label }}" class="form-label">Departure Date & Time *</label>
+                        {{ form.departure_datetime }}
+                        {% if form.departure_datetime.errors %}<div class="text-danger small mt-1">{{ form.departure_datetime.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.expected_arrival_datetime.id_for_label }}" class="form-label">Expected Arrival Date & Time *</label>
+                        {{ form.expected_arrival_datetime }}
+                        {% if form.expected_arrival_datetime.errors %}<div class="text-danger small mt-1">{{ form.expected_arrival_datetime.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">Route Status *</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                {% if route %}
+                <div class="mb-3">
+                    <label for="{{ form.actual_arrival_datetime.id_for_label }}" class="form-label">Actual Arrival Time (When Completed)</label>
+                    {{ form.actual_arrival_datetime }}
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Cargo Description & Instructions</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'routing:route_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-fms-primary px-4">
+                        <i class="bi bi-check-circle me-1"></i> Save Route
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

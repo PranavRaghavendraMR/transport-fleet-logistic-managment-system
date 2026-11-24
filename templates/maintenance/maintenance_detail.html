@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Maintenance Record: {{ record.vehicle.registration_number }}{% endblock %}
+{% block page_title %}Maintenance Dossier & Cost Breakdown{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="fw-bold mb-0 text-navy">{{ record.vehicle.registration_number }} - {{ record.maintenance_type }}</h4>
+            <span class="badge bg-{{ record.status_badge_class }} me-2">{{ record.status }}</span>
+            <span class="text-muted small">Service Date: {{ record.service_date|date:"d M Y" }}</span>
+        </div>
+    </div>
+
+    <!-- Quick Status Update Actions -->
+    <div class="d-flex gap-2">
+        {% if is_maintenance_staff %}
+            {% if record.status == 'Scheduled' %}
+            <form method="post" action="{% url 'maintenance:maintenance_quick_status' record.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="In Progress">
+                <button type="submit" class="btn btn-sm btn-warning">
+                    <i class="bi bi-gear-fill me-1"></i> Start Work
+                </button>
+            </form>
+            {% elif record.status == 'In Progress' %}
+            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
+                <i class="bi bi-check-circle me-1"></i> Complete Work Order
+            </button>
+            {% endif %}
+
+            <a href="{% url 'maintenance:maintenance_update' record.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+        {% endif %}
+
+        {% if is_admin %}
+        <a href="{% url 'maintenance:maintenance_delete' record.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-clipboard-data text-primary me-2"></i>Work Order Details</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <label class="fw-bold text-navy small">Reported Issue / Work Description:</label>
+                    <p class="p-3 bg-light rounded text-dark mb-0">{{ record.description_of_issue }}</p>
+                </div>
+
+                {% if record.work_completion_notes %}
+                <div class="mb-4">
+                    <label class="fw-bold text-navy small">Technician Completion Notes:</label>
+                    <p class="p-3 bg-light rounded text-dark mb-0">{{ record.work_completion_notes }}</p>
+                </div>
+                {% endif %}
+
+                <div class="row g-3 text-center mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <small class="text-muted">Service Date</small>
+                            <div class="fs-6 fw-bold text-navy">{{ record.service_date|date:"d M Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <small class="text-muted">Next Service Due</small>
+                            <div class="fs-6 fw-bold text-navy">{{ record.next_service_date|date:"d M Y"|default:"Not Scheduled" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <small class="text-muted">Odometer Reading</small>
+                            <div class="fs-6 fw-bold text-navy">{{ record.odometer_reading|intcomma }} km</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded border">
+                    <h6 class="fw-bold text-navy mb-3"><i class="bi bi-cash-stack text-success me-2"></i>Financial Expense Calculation</h6>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Spare Parts Cost:</span>
+                        <strong class="text-dark">₹ {{ record.spare_parts_cost|intcomma }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Technician Labour Cost:</span>
+                        <strong class="text-dark">₹ {{ record.labour_cost|intcomma }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 fs-5 fw-bold text-navy">
+                        <span>Total Maintenance Expense:</span>
+                        <span>₹ {{ record.total_cost|intcomma }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workshop & Vehicle Column -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-tools text-primary me-2"></i>Workshop Details</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="mb-3">
+                    <small class="text-muted d-block">Facility / Workshop</small>
+                    <div class="fw-bold text-navy fs-6">{{ record.workshop_name }}</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Assigned Chief Technician</small>
+                    <div class="fw-bold text-dark"><i class="bi bi-person me-1"></i>{{ record.technician_name }}</div>
+                </div>
+                <div>
+                    <small class="text-muted d-block">Status</small>
+                    <span class="badge bg-{{ record.status_badge_class }}">{{ record.status }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-truck text-primary me-2"></i>Vehicle Dossier</h6>
+            </div>
+            <div class="card-body p-3">
+                <h5 class="fw-bold text-navy mb-1">
+                    <a href="{% url 'fleet:vehicle_detail' record.vehicle.pk %}" class="text-decoration-none">{{ record.vehicle.registration_number }}</a>
+                </h5>
+                <p class="text-muted small mb-2">{{ record.vehicle.manufacturer }} {{ record.vehicle.model_name }}</p>
+                <div class="small mb-1">Type: <strong>{{ record.vehicle.vehicle_type }}</strong></div>
+                <div class="small">Live Status: <span class="badge bg-{{ record.vehicle.status_badge_class }}">{{ record.vehicle.status }}</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Work Completion -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'maintenance:maintenance_quick_status' record.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="Completed">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-check2-circle me-2"></i>Sign-off & Complete Maintenance</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Completing this work order will automatically restore the vehicle's availability status if no other active maintenance is pending.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Technician Completion Notes</label>
+                        <textarea name="completion_notes" class="form-control" rows="3" placeholder="Parts fitted, inspection results, road test verified..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Complete Work Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

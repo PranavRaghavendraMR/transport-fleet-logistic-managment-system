@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Maintenance Expense Report{% endblock %}
+{% block page_title %}Vehicle-wise Maintenance Cost Aggregation{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 no-print">
+    <div>
+        <h4 class="fw-bold mb-1 text-navy">Vehicle Maintenance Expense Report</h4>
+        <p class="text-muted small mb-0">Comprehensive vehicle-wise aggregated repair, spare parts, and labour expenditure.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-fms-primary"><i class="bi bi-printer me-1"></i> Print Report</button>
+        <a href="{% url 'reports:reports_home' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3 border-start border-danger border-4">
+            <small class="text-muted">Total Fleet Maintenance Expenditure</small>
+            <div class="fs-3 fw-bold text-danger">₹ {{ grand_total|intcomma }}</div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Report Date</small>
+            <div class="fs-4 fw-bold text-navy">{{ report_date|date:"d M Y" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="fms-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Make & Model</th>
+                    <th>Type</th>
+                    <th>Service Visits</th>
+                    <th>Spare Parts (₹)</th>
+                    <th>Labour Costs (₹)</th>
+                    <th>Total Expense (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in vehicle_expenses %}
+                <tr>
+                    <td class="fw-bold">{{ row.vehicle.registration_number }}</td>
+                    <td>{{ row.vehicle.manufacturer }} {{ row.vehicle.model_name }}</td>
+                    <td>{{ row.vehicle.vehicle_type }}</td>
+                    <td>{{ row.count }} visit{{ row.count|pluralize }}</td>
+                    <td>₹ {{ row.spare|intcomma }}</td>
+                    <td>₹ {{ row.labour|intcomma }}</td>
+                    <td class="fw-bold text-navy">₹ {{ row.total|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-4 text-muted">No maintenance costs recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

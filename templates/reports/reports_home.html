@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports & Analytics Center{% endblock %}
+{% block page_title %}Transport Fleet Reports & Analytics Directory{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1" style="color: #0b2239;">Executive Reports & Analytics Center</h4>
+    <p class="text-muted small mb-0">Generate, filter, analyze, and print formal audit reports for fleet operations, safety compliance, and financials.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Group 1: Fleet & Routing Reports -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-icon-primary rounded me-3"><i class="bi bi-truck fs-4"></i></div>
+                    <h5 class="fw-bold text-navy mb-0">Fleet & Routing</h5>
+                </div>
+                <p class="text-muted small mb-3">Inventory audits, operational availability states, and route delivery tracking.</p>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'reports:vehicle_inventory_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-text text-primary me-2"></i>Vehicle Inventory Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a href="{% url 'reports:vehicle_availability_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-pie-chart text-success me-2"></i>Vehicle Availability Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a href="{% url 'reports:driver_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-person-badge text-info me-2"></i>Driver Information Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a href="{% url 'reports:route_performance_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-signpost-split text-warning me-2"></i>Route Performance Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group 2: Workshop & Maintenance Reports -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-icon-warning rounded me-3"><i class="bi bi-tools fs-4"></i></div>
+                    <h5 class="fw-bold text-navy mb-0">Workshop & Service</h5>
+                </div>
+                <p class="text-muted small mb-3">Complete vehicle servicing history, parts breakdown, and maintenance expenditure.</p>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'reports:maintenance_history_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-clock-history text-primary me-2"></i>Maintenance History Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a href="{% url 'reports:maintenance_expense_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-cash-stack text-danger me-2"></i>Maintenance Expense Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group 3: Fuel & Efficiency Reports -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-icon-sky rounded me-3"><i class="bi bi-fuel-pump fs-4"></i></div>
+                    <h5 class="fw-bold text-navy mb-0">Fuel & Mileage</h5>
+                </div>
+                <p class="text-muted small mb-3">Fuel purchase audits, vehicle-wise fuel bills, and fleet mileage performance.</p>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'reports:fuel_expense_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-droplet-half text-primary me-2"></i>Fuel Expense Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a href="{% url 'reports:vehicle_mileage_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-speedometer2 text-success me-2"></i>Vehicle Mileage (km/L) Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group 4: Safety & Compliance -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-icon-danger rounded me-3"><i class="bi bi-shield-exclamation fs-4"></i></div>
+                    <h5 class="fw-bold text-navy mb-0">Safety & Incident Logs</h5>
+                </div>
+                <p class="text-muted small mb-3">Accident records, severity categorizations, loss costs, and inspection compliance.</p>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'reports:safety_incident_report' %}" class="list-group-item list-group-item-action px-0 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-exclamation-octagon text-danger me-2"></i>Safety Incident Report</span>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

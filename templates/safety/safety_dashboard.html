@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Fleet Safety & Compliance Dashboard{% endblock %}
+{% block page_title %}Fleet Safety, Incident Response & Road Compliance{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="fw-bold mb-1" style="color: #0b2239;">Safety & Compliance Center</h4>
+        <p class="text-muted small mb-0">Monitor safety incidents, vehicle inspections, driver compliance, and document expiration.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'safety:incident_create' %}" class="btn btn-outline-danger">
+            <i class="bi bi-exclamation-triangle me-1"></i> Report Safety Incident
+        </a>
+        <a href="{% url 'safety:inspection_create' %}" class="btn btn-fms-primary">
+            <i class="bi bi-clipboard2-check me-1"></i> Conduct Inspection
+        </a>
+    </div>
+</div>
+
+<!-- Safety KPI Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Total Incidents</div>
+                    <div class="kpi-value">{{ total_incidents }}</div>
+                    <small class="text-muted">Reported</small>
+                </div>
+                <div class="kpi-icon bg-icon-warning"><i class="bi bi-shield-exclamation"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card h-100 border-start border-danger border-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Open Incidents</div>
+                    <div class="kpi-value text-danger">{{ open_incidents }}</div>
+                    <small class="text-muted">Under Investigation</small>
+                </div>
+                <div class="kpi-icon bg-icon-danger"><i class="bi bi-exclamation-octagon"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card h-100 border-start border-success border-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Resolved Incidents</div>
+                    <div class="kpi-value text-success">{{ resolved_incidents }}</div>
+                    <small class="text-muted">Claims & Actions Closed</small>
+                </div>
+                <div class="kpi-icon bg-icon-success"><i class="bi bi-check2-circle"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card h-100 border-start border-primary border-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Damage Impact</div>
+                    <div class="kpi-value" style="font-size: 1.5rem;">₹ {{ total_damage_cost|intcomma }}</div>
+                    <small class="text-muted">Estimated Repair Cost</small>
+                </div>
+                <div class="kpi-icon bg-icon-primary"><i class="bi bi-cash"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inspections & Document Expiry Warnings -->
+<div class="row g-4 mb-4">
+    <!-- Vehicles Requiring Safety Inspection -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-clock-history text-warning me-2"></i>Vehicles Requiring Safety Inspection</h6>
+                <span class="badge bg-warning text-dark">{{ vehicles_needing_inspection|length }} Vehicles</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Type</th>
+                                <th>Last Inspection</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in vehicles_needing_inspection %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'fleet:vehicle_detail' item.vehicle.pk %}">{{ item.vehicle.registration_number }}</a></td>
+                                <td>{{ item.vehicle.vehicle_type }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">{{ item.last_inspection }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'safety:inspection_create' %}?vehicle_id={{ item.vehicle.pk }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-clipboard-check me-1"></i> Inspect
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-success"><i class="bi bi-check-circle me-1"></i>All fleet vehicles have valid recent inspections!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expired or Expiring Documents Monitoring -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-file-earmark-medical text-danger me-2"></i>Document Expiry Watchlist (30 Days)</h6>
+                <span class="badge bg-danger">{{ expiring_insurance.count|add:expiring_licenses.count }} Alerts</span>
+            </div>
+            <div class="card-body p-3">
+                {% if expiring_insurance or expiring_licenses %}
+                    {% for v in expiring_insurance %}
+                    <div class="alert alert-warning py-2 px-3 mb-2 small d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><i class="bi bi-truck me-1"></i>{{ v.registration_number }}</strong>: Vehicle insurance expires on <strong>{{ v.insurance_expiry_date|date:"d M Y" }}</strong>
+                        </div>
+                        <span class="badge bg-warning text-dark">Insurance</span>
+                    </div>
+                    {% endfor %}
+                    {% for d in expiring_licenses %}
+                    <div class="alert alert-danger py-2 px-3 mb-2 small d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><i class="bi bi-person me-1"></i>{{ d.name }}</strong>: Driving licence expires on <strong>{{ d.license_expiry_date|date:"d M Y" }}</strong>
+                        </div>
+                        <span class="badge bg-danger">Licence</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 text-success">
+                        <i class="bi bi-shield-check fs-1 d-block mb-2"></i>
+                        No documents are expiring within the next 30 days!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Incidents and Inspections -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Recent Safety Incidents</h6>
+                <a href="{% url 'safety:incident_list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Incident ID</th>
+                                <th>Vehicle & Driver</th>
+                                <th>Date & Type</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inc in recent_incidents %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'safety:incident_detail' inc.pk %}">{{ inc.incident_id }}</a></td>
+                                <td>
+                                    <div>{{ inc.vehicle.registration_number }}</div>
+                                    <small class="text-muted">{{ inc.driver.name|default:"Unassigned" }}</small>
+                                </td>
+                                <td>
+                                    <div>{{ inc.incident_type }}</div>
+                                    <small class="text-muted">{{ inc.incident_date|date:"d M Y" }}</small>
+                                </td>
+                                <td><span class="badge bg-{{ inc.severity_badge_class }}">{{ inc.damage_severity }}</span></td>
+                                <td><span class="badge bg-{{ inc.status_badge_class }}">{{ inc.status }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No safety incidents on file.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-clipboard2-check text-primary me-2"></i>Recent Road Inspections</h6>
+                <a href="{% url 'safety:inspection_list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Inspection ID</th>
+                                <th>Vehicle</th>
+                                <th>Date</th>
+                                <th>Inspector</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for insp in recent_inspections %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'safety:inspection_detail' insp.pk %}">{{ insp.inspection_id }}</a></td>
+                                <td>{{ insp.vehicle.registration_number }}</td>
+                                <td>{{ insp.inspection_date|date:"d M Y" }}</td>
+                                <td>{{ insp.inspector_name }}</td>
+                                <td><span class="badge bg-{{ insp.result_badge_class }}">{{ insp.overall_inspection_result }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No safety inspections recorded yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

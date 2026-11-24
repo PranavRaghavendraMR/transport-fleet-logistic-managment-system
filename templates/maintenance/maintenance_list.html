@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Maintenance Records{% endblock %}
+{% block page_title %}Workshop Maintenance Logs & Service History{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="fw-bold mb-1" style="color: #0b2239;">Maintenance Work Orders</h4>
+        <p class="text-muted small mb-0">Complete historical and active logs of repairs, part replacements, and preventive checks.</p>
+    </div>
+    {% if is_maintenance_staff %}
+    <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-fms-primary">
+        <i class="bi bi-plus-circle me-1"></i> Log Maintenance
+    </a>
+    {% endif %}
+</div>
+
+<!-- Search & Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <input type="text" name="q" class="form-control" placeholder="Search vehicle, workshop, technician..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">All Maintenance Types</option>
+                    {% for t_val, t_label in types %}
+                    <option value="{{ t_val }}" {% if type_filter == t_val %}selected{% endif %}>{{ t_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for s_val, s_label in statuses %}
+                    <option value="{{ s_val }}" {% if status_filter == s_val %}selected{% endif %}>{{ s_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="vehicle" class="form-select">
+                    <option value="">All Vehicles</option>
+                    {% for v in vehicles %}
+                    <option value="{{ v.id }}" {% if vehicle_id == v.id|stringformat:"s" %}selected{% endif %}>{{ v.registration_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-fms-sky w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table of Maintenance Records -->
+<div class="fms-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Maintenance Type</th>
+                    <th>Service Date</th>
+                    <th>Workshop & Technician</th>
+                    <th>Odometer</th>
+                    <th>Parts Cost</th>
+                    <th>Labour Cost</th>
+                    <th>Total Cost</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in records %}
+                <tr>
+                    <td>
+                        <a href="{% url 'fleet:vehicle_detail' m.vehicle.pk %}" class="fw-bold text-navy text-decoration-none">
+                            <i class="bi bi-truck text-muted me-1"></i>{{ m.vehicle.registration_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'maintenance:maintenance_detail' m.pk %}" class="fw-semibold text-decoration-none">
+                            {{ m.maintenance_type }}
+                        </a>
+                        <small class="d-block text-muted">{{ m.description_of_issue|truncatechars:35 }}</small>
+                    </td>
+                    <td>
+                        {{ m.service_date|date:"d M Y" }}
+                        {% if m.is_overdue %}<span class="badge bg-danger ms-1">OVERDUE</span>{% endif %}
+                    </td>
+                    <td>
+                        <div>{{ m.workshop_name }}</div>
+                        <small class="text-muted"><i class="bi bi-person me-1"></i>{{ m.technician_name }}</small>
+                    </td>
+                    <td>{{ m.odometer_reading|intcomma }} km</td>
+                    <td>₹ {{ m.spare_parts_cost|intcomma }}</td>
+                    <td>₹ {{ m.labour_cost|intcomma }}</td>
+                    <td class="fw-bold text-navy">₹ {{ m.total_cost|intcomma }}</td>
+                    <td>
+                        <span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span>
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'maintenance:maintenance_detail' m.pk %}" class="btn btn-outline-secondary" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if is_maintenance_staff %}
+                            <a href="{% url 'maintenance:maintenance_update' m.pk %}" class="btn btn-outline-primary" title="Edit Record">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                            {% if is_admin %}
+                            <a href="{% url 'maintenance:maintenance_delete' m.pk %}" class="btn btn-outline-danger" title="Delete Record">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center py-5 text-muted">
+                        <i class="bi bi-tools fs-1 d-block mb-2"></i>
+                        No maintenance work orders found matching criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

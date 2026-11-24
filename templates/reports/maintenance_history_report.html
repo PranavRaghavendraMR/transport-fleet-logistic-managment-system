@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Maintenance History Report{% endblock %}
+{% block page_title %}Vehicle Maintenance History & Workshop Audit{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 no-print">
+    <div>
+        <h4 class="fw-bold mb-1 text-navy">Maintenance History Report</h4>
+        <p class="text-muted small mb-0">Detailed chronological history of all preventive and repair servicing.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-fms-primary"><i class="bi bi-printer me-1"></i> Print Report</button>
+        <a href="{% url 'reports:reports_home' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4 no-print">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <select name="vehicle" class="form-select">
+                    <option value="">All Vehicles</option>
+                    {% for v in vehicles %}
+                    <option value="{{ v.id }}" {% if vehicle_id == v.id|stringformat:"s" %}selected{% endif %}>{{ v.registration_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">All Maintenance Types</option>
+                    {% for t_val, t_label in types %}
+                    <option value="{{ t_val }}" {% if type_filter == t_val %}selected{% endif %}>{{ t_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-fms-sky w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'reports:maintenance_history_report' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Spare Parts Expenditure</small>
+            <div class="fs-4 fw-bold text-navy">₹ {{ total_spare|intcomma }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Technician Labour Costs</small>
+            <div class="fs-4 fw-bold text-navy">₹ {{ total_labour|intcomma }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3 border-start border-danger border-4">
+            <small class="text-muted">Total Maintenance Cost</small>
+            <div class="fs-4 fw-bold text-danger">₹ {{ total_cost|intcomma }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="fms-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Vehicle</th>
+                    <th>Type</th>
+                    <th>Workshop</th>
+                    <th>Technician</th>
+                    <th>Odometer</th>
+                    <th>Parts (₹)</th>
+                    <th>Labour (₹)</th>
+                    <th>Total (₹)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in records %}
+                <tr>
+                    <td>{{ m.service_date|date:"d M Y" }}</td>
+                    <td class="fw-bold">{{ m.vehicle.registration_number }}</td>
+                    <td>{{ m.maintenance_type }}</td>
+                    <td>{{ m.workshop_name }}</td>
+                    <td>{{ m.technician_name }}</td>
+                    <td>{{ m.odometer_reading|intcomma }} km</td>
+                    <td>{{ m.spare_parts_cost|intcomma }}</td>
+                    <td>{{ m.labour_cost|intcomma }}</td>
+                    <td class="fw-bold text-navy">{{ m.total_cost|intcomma }}</td>
+                    <td><span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" class="text-center py-4 text-muted">No maintenance entries found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

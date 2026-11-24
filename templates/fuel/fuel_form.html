@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="form-card">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-navy"><i class="bi bi-fuel-pump me-2 text-primary"></i>{{ title }}</h5>
+                <a href="{% url 'fuel:fuel_list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Fuel Logs
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.vehicle.id_for_label }}" class="form-label">Vehicle *</label>
+                        {{ form.vehicle }}
+                        {% if form.vehicle.errors %}<div class="text-danger small mt-1">{{ form.vehicle.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.fuel_type.id_for_label }}" class="form-label">Fuel Type *</label>
+                        {{ form.fuel_type }}
+                        {% if form.fuel_type.errors %}<div class="text-danger small mt-1">{{ form.fuel_type.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3 p-3 bg-light rounded border">
+                    <div class="col-md-4">
+                        <label for="{{ form.fuel_quantity.id_for_label }}" class="form-label">Fuel Quantity (Litres) *</label>
+                        {{ form.fuel_quantity }}
+                        {% if form.fuel_quantity.errors %}<div class="text-danger small mt-1">{{ form.fuel_quantity.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.fuel_price_per_litre.id_for_label }}" class="form-label">Price Per Litre (₹) *</label>
+                        {{ form.fuel_price_per_litre }}
+                        {% if form.fuel_price_per_litre.errors %}<div class="text-danger small mt-1">{{ form.fuel_price_per_litre.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Calculated Total Fuel Cost</label>
+                        <div class="form-control bg-white fw-bold text-navy" id="calculated_fuel_total">₹ 0.00</div>
+                        <small class="text-muted">Quantity &times; Price/Litre</small>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.fuel_station.id_for_label }}" class="form-label">Fuel Station / Vendor *</label>
+                        {{ form.fuel_station }}
+                        {% if form.fuel_station.errors %}<div class="text-danger small mt-1">{{ form.fuel_station.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.fuel_date.id_for_label }}" class="form-label">Purchase Date *</label>
+                        {{ form.fuel_date }}
+                        {% if form.fuel_date.errors %}<div class="text-danger small mt-1">{{ form.fuel_date.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.odometer_reading.id_for_label }}" class="form-label">Current Odometer at Fueling (km) *</label>
+                        {{ form.odometer_reading }}
+                        <small class="text-muted">Used to calculate distance run and mileage since last fueling.</small>
+                        {% if form.odometer_reading.errors %}<div class="text-danger small mt-1">{{ form.odometer_reading.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.invoice_number.id_for_label }}" class="form-label">Invoice / Receipt Bill No.</label>
+                        {{ form.invoice_number }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Remarks / Fleet Card Reference</label>
+                    {{ form.notes }}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'fuel:fuel_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-fms-primary px-4">
+                        <i class="bi bi-check-circle me-1"></i> Save Fuel Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

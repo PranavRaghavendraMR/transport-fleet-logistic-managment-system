@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Incident: {{ incident.incident_id }}{% endblock %}
+{% block page_title %}Safety Incident File: {{ incident.incident_id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'safety:incident_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="fw-bold mb-0 text-navy">{{ incident.incident_id }}: {{ incident.incident_type }}</h4>
+            <span class="badge bg-{{ incident.severity_badge_class }} me-2">{{ incident.damage_severity }} Severity</span>
+            <span class="badge bg-{{ incident.status_badge_class }}">{{ incident.status }}</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'safety:incident_update' incident.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit Incident
+        </a>
+        {% if is_admin %}
+        <a href="{% url 'safety:incident_delete' incident.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Incident Investigation Narrative</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <label class="fw-bold text-navy small">Detailed Circumstances & Observations:</label>
+                    <p class="p-3 bg-light rounded text-dark mb-0">{{ incident.description }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fw-bold text-navy small">Corrective Action Taken & Prevention Strategy:</label>
+                    <p class="p-3 bg-light rounded text-dark mb-0">{{ incident.action_taken }}</p>
+                </div>
+
+                <div class="row g-3 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <small class="text-muted">Incident Date</small>
+                            <div class="fs-6 fw-bold text-navy">{{ incident.incident_date|date:"d M Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <small class="text-muted">Location</small>
+                            <div class="fs-6 fw-bold text-navy">{{ incident.incident_location }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <small class="text-muted">Estimated Loss Cost</small>
+                            <div class="fs-6 fw-bold text-danger">₹ {{ incident.estimated_damage_cost|intcomma }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-truck text-primary me-2"></i>Involved Vehicle</h6>
+            </div>
+            <div class="card-body p-3">
+                <h5 class="fw-bold text-navy mb-1">
+                    <a href="{% url 'fleet:vehicle_detail' incident.vehicle.pk %}" class="text-decoration-none">{{ incident.vehicle.registration_number }}</a>
+                </h5>
+                <p class="text-muted small mb-2">{{ incident.vehicle.manufacturer }} {{ incident.vehicle.model_name }}</p>
+                <div class="small mb-1">Type: <strong>{{ incident.vehicle.vehicle_type }}</strong></div>
+                <div class="small">Live Status: <span class="badge bg-{{ incident.vehicle.status_badge_class }}">{{ incident.vehicle.status }}</span></div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-person-badge text-primary me-2"></i>Involved Driver</h6>
+            </div>
+            <div class="card-body p-3">
+                {% if incident.driver %}
+                <h5 class="fw-bold text-navy mb-1">
+                    <a href="{% url 'fleet:driver_detail' incident.driver.pk %}" class="text-decoration-none">{{ incident.driver.name }}</a>
+                </h5>
+                <p class="text-muted small mb-2"><i class="bi bi-telephone me-1"></i>{{ incident.driver.contact_number }}</p>
+                <div class="small mb-1">Licence: <code>{{ incident.driver.license_number }}</code></div>
+                <div class="small">Status: <span class="badge bg-{{ incident.driver.status_badge_class }}">{{ incident.driver.employment_status }}</span></div>
+                {% else %}
+                <p class="text-muted small mb-0">No specific driver assigned or parked at time of incident.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

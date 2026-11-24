@@ -1,0 +1,304 @@
+/* Transport Fleet & Logistics Management System (FMS)
+ * Enterprise Design Theme: Navy Blue (#0b2239), Sky Blue (#0284c7), Orange Accent (#ea580c)
+ * Student: Pranavraghavendra M R | Chanakya University | BCA V Sem
+ */
+
+:root {
+  --fms-navy: #0b2239;
+  --fms-navy-dark: #071626;
+  --fms-navy-light: #163654;
+  --fms-sky: #0284c7;
+  --fms-sky-light: #38bdf8;
+  --fms-orange: #ea580c;
+  --fms-orange-light: #f97316;
+  --fms-bg: #f8fafc;
+  --fms-card-bg: #ffffff;
+  --fms-text-main: #1e293b;
+  --fms-text-muted: #64748b;
+  --fms-border: #e2e8f0;
+  --sidebar-width: 260px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: var(--fms-bg);
+  color: var(--fms-text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Sidebar Styles */
+#sidebar-wrapper {
+  min-height: 100vh;
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--fms-navy-dark) 0%, var(--fms-navy) 100%);
+  color: #ffffff;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-heading {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-heading .brand-title {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.sidebar-heading .brand-subtitle {
+  font-size: 0.75rem;
+  color: var(--fms-sky-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar-nav {
+  padding: 0.75rem 0;
+}
+
+.sidebar-nav .nav-header {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #94a3b8;
+  padding: 0.8rem 1.5rem 0.3rem;
+  font-weight: 600;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.65rem 1.5rem;
+  color: #cbd5e1;
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav .nav-link i {
+  font-size: 1.15rem;
+  margin-right: 0.85rem;
+  width: 20px;
+  text-align: center;
+  color: var(--fms-sky-light);
+}
+
+.sidebar-nav .nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: var(--fms-sky);
+}
+
+.sidebar-nav .nav-link.active {
+  color: #ffffff;
+  background: linear-gradient(90deg, rgba(2, 132, 199, 0.3) 0%, rgba(2, 132, 199, 0.05) 100%);
+  border-left-color: var(--fms-sky);
+  font-weight: 600;
+}
+
+/* Page Content Wrapper */
+#page-content-wrapper {
+  flex: 1;
+  min-width: 0;
+  background-color: var(--fms-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Navbar */
+.top-navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--fms-border);
+  padding: 0.75rem 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.top-navbar .academic-badge {
+  background: #f1f5f9;
+  color: var(--fms-navy);
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  border: 1px solid #e2e8f0;
+}
+
+/* KPI Cards */
+.kpi-card {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid var(--fms-border);
+  padding: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.07);
+}
+
+.kpi-card .kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.kpi-card .kpi-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--fms-navy);
+  margin-top: 0.25rem;
+  margin-bottom: 0.1rem;
+}
+
+.kpi-card .kpi-title {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--fms-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bg-icon-primary { background: rgba(11, 34, 57, 0.1); color: var(--fms-navy); }
+.bg-icon-sky { background: rgba(2, 132, 199, 0.12); color: var(--fms-sky); }
+.bg-icon-success { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+.bg-icon-warning { background: rgba(234, 88, 12, 0.12); color: var(--fms-orange); }
+.bg-icon-danger { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+.bg-icon-info { background: rgba(14, 165, 233, 0.12); color: #0ea5e9; }
+
+/* Custom Badges */
+.badge-available { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-in-use { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.badge-maintenance { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.badge-scheduled { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+/* Tables */
+.fms-table-container {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid var(--fms-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.table thead th {
+  background-color: #f8fafc;
+  color: var(--fms-navy);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--fms-border);
+  padding: 0.85rem 1rem;
+}
+
+.table tbody td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Forms */
+.form-card {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid var(--fms-border);
+  padding: 1.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.form-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--fms-navy);
+  margin-bottom: 0.35rem;
+}
+
+.form-control, .form-select {
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.92rem;
+  padding: 0.55rem 0.85rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--fms-sky);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+/* Buttons */
+.btn-fms-primary {
+  background-color: var(--fms-navy);
+  border-color: var(--fms-navy);
+  color: #ffffff;
+}
+
+.btn-fms-primary:hover {
+  background-color: var(--fms-navy-light);
+  border-color: var(--fms-navy-light);
+  color: #ffffff;
+}
+
+.btn-fms-sky {
+  background-color: var(--fms-sky);
+  border-color: var(--fms-sky);
+  color: #ffffff;
+}
+
+.btn-fms-sky:hover {
+  background-color: #0270a8;
+  border-color: #0270a8;
+  color: #ffffff;
+}
+
+/* Footer */
+.fms-footer {
+  margin-top: auto;
+  background-color: #ffffff;
+  border-top: 1px solid var(--fms-border);
+  padding: 1rem 1.75rem;
+  font-size: 0.82rem;
+  color: var(--fms-text-muted);
+}
+
+/* Print Friendly Styles for Reports */
+@media print {
+  #sidebar-wrapper, .top-navbar, .no-print, .btn, .fms-footer {
+    display: none !important;
+  }
+  body, #page-content-wrapper {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .container-fluid {
+    width: 100% !important;
+    padding: 0 !important;
+  }
+  .fms-table-container, .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .print-header {
+    display: block !important;
+    border-bottom: 2px solid #000;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+  }
+}

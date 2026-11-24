@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Inspection: {{ inspection.inspection_id }}{% endblock %}
+{% block page_title %}Inspection Dossier: {{ inspection.inspection_id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'safety:inspection_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="fw-bold mb-0 text-navy">{{ inspection.inspection_id }}: {{ inspection.vehicle.registration_number }}</h4>
+            <span class="badge bg-{{ inspection.result_badge_class }} me-2">{{ inspection.overall_inspection_result }}</span>
+            <span class="text-muted small">Date: {{ inspection.inspection_date|date:"d M Y" }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-clipboard2-check text-primary me-2"></i>Component Assessment Findings</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Braking System</small>
+                                <strong class="fs-6 text-dark">{{ inspection.brake_condition }}</strong>
+                            </div>
+                            <span class="badge bg-{% if inspection.brake_condition == 'Pass' %}success{% elif inspection.brake_condition == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ inspection.brake_condition }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Tyres & Tread Depth</small>
+                                <strong class="fs-6 text-dark">{{ inspection.tyre_condition }}</strong>
+                            </div>
+                            <span class="badge bg-{% if inspection.tyre_condition == 'Pass' %}success{% elif inspection.tyre_condition == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ inspection.tyre_condition }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Lights & Signalling</small>
+                                <strong class="fs-6 text-dark">{{ inspection.lights_condition }}</strong>
+                            </div>
+                            <span class="badge bg-{% if inspection.lights_condition == 'Pass' %}success{% elif inspection.lights_condition == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ inspection.lights_condition }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">On-board Documents</small>
+                                <strong class="fs-6 text-dark">{{ inspection.documents_verification }}</strong>
+                            </div>
+                            <span class="badge bg-{% if inspection.documents_verification == 'Valid' %}success{% elif inspection.documents_verification == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ inspection.documents_verification }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold text-navy small">Inspector's Remarks:</label>
+                    <p class="p-3 bg-light rounded text-dark mb-0">{{ inspection.remarks|default:"No specific issues noted during routine inspection." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-person-check text-primary me-2"></i>Certifying Inspector</h6>
+            </div>
+            <div class="card-body p-3">
+                <h5 class="fw-bold text-navy mb-1">{{ inspection.inspector_name }}</h5>
+                <small class="text-muted d-block mb-3">Authorized Fleet Quality & Safety Inspector</small>
+                <div>Inspection Date: <strong>{{ inspection.inspection_date|date:"d M Y" }}</strong></div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-truck text-primary me-2"></i>Inspected Vehicle</h6>
+            </div>
+            <div class="card-body p-3">
+                <h5 class="fw-bold text-navy mb-1">
+                    <a href="{% url 'fleet:vehicle_detail' inspection.vehicle.pk %}" class="text-decoration-none">{{ inspection.vehicle.registration_number }}</a>
+                </h5>
+                <p class="text-muted small mb-2">{{ inspection.vehicle.manufacturer }} {{ inspection.vehicle.model_name }}</p>
+                <div class="small">Live Status: <span class="badge bg-{{ inspection.vehicle.status_badge_class }}">{{ inspection.vehicle.status }}</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

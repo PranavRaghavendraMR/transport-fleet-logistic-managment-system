@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Vehicle Mileage Report{% endblock %}
+{% block page_title %}Fleet Fuel Efficiency & Mileage (km/L) Comparison{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 no-print">
+    <div>
+        <h4 class="fw-bold mb-1 text-navy">Vehicle Mileage & Fuel Efficiency Report</h4>
+        <p class="text-muted small mb-0">Comparative analysis of fuel efficiency (km/L), total fuel consumed, and overall mileage spread.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-fms-primary"><i class="bi bi-printer me-1"></i> Print Report</button>
+        <a href="{% url 'reports:reports_home' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+</div>
+
+<div class="alert alert-info py-2 px-3 mb-4 small">
+    <strong>Auditing Methodology:</strong> Mileage is derived from consecutive valid refuel logs for each vehicle: <code>Mileage (km/L) = (Current Odometer - Previous Odometer) / Fuel Quantity Filled</code>.
+</div>
+
+<div class="fms-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Make & Model</th>
+                    <th>Type</th>
+                    <th>Fuel Type</th>
+                    <th>Average Mileage (km/L)</th>
+                    <th>Best Mileage</th>
+                    <th>Total Fuel Consumed</th>
+                    <th>Total Fuel Cost (₹)</th>
+                    <th>Current Odometer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in vehicle_mileages %}
+                <tr>
+                    <td class="fw-bold">{{ row.vehicle.registration_number }}</td>
+                    <td>{{ row.vehicle.manufacturer }} {{ row.vehicle.model_name }}</td>
+                    <td>{{ row.vehicle.vehicle_type }}</td>
+                    <td>{{ row.vehicle.fuel_type }}</td>
+                    <td>
+                        {% if row.avg_mileage > 0 %}
+                        <span class="badge bg-success fs-6">{{ row.avg_mileage }} km/L</span>
+                        {% else %}
+                        <span class="text-muted">Awaiting Baseline</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.best_mileage > 0 %}
+                        <span class="fw-semibold text-primary">{{ row.best_mileage }} km/L</span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ row.total_fuel|intcomma }} L</td>
+                    <td class="fw-bold text-navy">₹ {{ row.total_cost|intcomma }}</td>
+                    <td>{{ row.odometer|intcomma }} km</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center py-4 text-muted">No mileage data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

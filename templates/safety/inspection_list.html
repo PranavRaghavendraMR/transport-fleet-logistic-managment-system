@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Safety Inspections{% endblock %}
+{% block page_title %}Roadworthiness & Safety Inspection Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="fw-bold mb-1" style="color: #0b2239;">Vehicle Safety Inspections</h4>
+        <p class="text-muted small mb-0">Pre-trip and routine roadworthiness audits for brakes, tyres, lights, and valid paperwork.</p>
+    </div>
+    <a href="{% url 'safety:inspection_create' %}" class="btn btn-fms-primary">
+        <i class="bi bi-plus-circle me-1"></i> Perform New Inspection
+    </a>
+</div>
+
+<!-- Filter Toolbar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <select name="vehicle" class="form-select">
+                    <option value="">All Vehicles</option>
+                    {% for v in vehicles %}
+                    <option value="{{ v.id }}" {% if vehicle_id == v.id|stringformat:"s" %}selected{% endif %}>{{ v.registration_number }} ({{ v.model_name }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="result" class="form-select">
+                    <option value="">All Inspection Results</option>
+                    {% for r_val, r_label in results %}
+                    <option value="{{ r_val }}" {% if result_filter == r_val %}selected{% endif %}>{{ r_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-fms-sky w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'safety:inspection_list' %}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Inspections Table -->
+<div class="fms-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Inspection ID</th>
+                    <th>Vehicle</th>
+                    <th>Date</th>
+                    <th>Inspector</th>
+                    <th>Brakes</th>
+                    <th>Tyres</th>
+                    <th>Lights</th>
+                    <th>Documents</th>
+                    <th>Overall Result</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for insp in inspections %}
+                <tr>
+                    <td class="fw-bold">
+                        <a href="{% url 'safety:inspection_detail' insp.pk %}" class="text-navy text-decoration-none">
+                            <i class="bi bi-clipboard2-check text-primary me-1"></i>{{ insp.inspection_id }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'fleet:vehicle_detail' insp.vehicle.pk %}" class="fw-semibold text-decoration-none">
+                            {{ insp.vehicle.registration_number }}
+                        </a>
+                    </td>
+                    <td>{{ insp.inspection_date|date:"d M Y" }}</td>
+                    <td><i class="bi bi-person me-1 text-muted"></i>{{ insp.inspector_name }}</td>
+                    <td><span class="badge bg-{% if insp.brake_condition == 'Pass' %}success{% elif insp.brake_condition == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ insp.brake_condition }}</span></td>
+                    <td><span class="badge bg-{% if insp.tyre_condition == 'Pass' %}success{% elif insp.tyre_condition == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ insp.tyre_condition }}</span></td>
+                    <td><span class="badge bg-{% if insp.lights_condition == 'Pass' %}success{% elif insp.lights_condition == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ insp.lights_condition }}</span></td>
+                    <td><span class="badge bg-{% if insp.documents_verification == 'Valid' %}success{% elif insp.documents_verification == 'Attention Needed' %}warning text-dark{% else %}danger{% endif %}">{{ insp.documents_verification }}</span></td>
+                    <td><span class="badge bg-{{ insp.result_badge_class }}">{{ insp.overall_inspection_result }}</span></td>
+                    <td class="text-end">
+                        <a href="{% url 'safety:inspection_detail' insp.pk %}" class="btn btn-sm btn-outline-secondary" title="View Inspection Sheet">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center py-5 text-muted">
+                        <i class="bi bi-clipboard2-x fs-1 d-block mb-2"></i>
+                        No inspection records found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

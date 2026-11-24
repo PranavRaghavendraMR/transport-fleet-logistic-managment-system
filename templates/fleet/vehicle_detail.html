@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Vehicle: {{ vehicle.registration_number }}{% endblock %}
+{% block page_title %}Vehicle Dossier: {{ vehicle.registration_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'fleet:vehicle_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="fw-bold mb-0 text-navy">{{ vehicle.registration_number }}</h4>
+            <span class="badge bg-{{ vehicle.status_badge_class }} me-2">{{ vehicle.status }}</span>
+            <span class="text-muted small">{{ vehicle.manufacturer }} {{ vehicle.model_name }} ({{ vehicle.vehicle_type }})</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        {% if is_fleet_manager %}
+        <a href="{% url 'fleet:vehicle_update' vehicle.pk %}" class="btn btn-sm btn-fms-primary">
+            <i class="bi bi-pencil me-1"></i> Edit Details
+        </a>
+        {% endif %}
+        {% if is_maintenance_staff %}
+        <a href="{% url 'maintenance:maintenance_create' %}?vehicle_id={{ vehicle.pk }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-tools me-1"></i> Schedule Service
+        </a>
+        {% endif %}
+        <a href="{% url 'fuel:fuel_create' %}?vehicle_id={{ vehicle.pk }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-fuel-pump me-1"></i> Log Refuel
+        </a>
+        {% if is_admin %}
+        <a href="{% url 'fleet:vehicle_delete' vehicle.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Vehicle Specification Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Payload Capacity</small>
+            <div class="fs-5 fw-bold text-navy">{{ vehicle.capacity_kg|intcomma }} kg</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Current Odometer</small>
+            <div class="fs-5 fw-bold text-primary">{{ vehicle.current_odometer|intcomma }} km</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Fuel Type</small>
+            <div class="fs-5 fw-bold text-dark">{{ vehicle.fuel_type }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted">Insurance Status</small>
+            <div class="fs-6 fw-bold {% if vehicle.is_insurance_expired %}text-danger{% else %}text-success{% endif %}">
+                {{ vehicle.insurance_expiry_date|date:"d M Y" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs for History: Routes, Maintenance, Fuel, Safety -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <ul class="nav nav-tabs card-header-tabs" id="vehicleTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-semibold" id="routes-tab" data-bs-toggle="tab" data-bs-target="#routes" type="button">
+                    <i class="bi bi-signpost me-1"></i> Routes ({{ recent_routes.count }})
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold" id="maint-tab" data-bs-toggle="tab" data-bs-target="#maint" type="button">
+                    <i class="bi bi-tools me-1"></i> Workshop History ({{ maintenance_history.count }})
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold" id="fuel-tab" data-bs-toggle="tab" data-bs-target="#fuel" type="button">
+                    <i class="bi bi-fuel-pump me-1"></i> Fuel Logs ({{ fuel_history.count }})
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold" id="safety-tab" data-bs-toggle="tab" data-bs-target="#safety" type="button">
+                    <i class="bi bi-shield-check me-1"></i> Safety & Inspections
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body p-0">
+        <div class="tab-content" id="vehicleTabsContent">
+            <!-- Routes Tab -->
+            <div class="tab-pane fade show active p-3" id="routes" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Route Code</th>
+                                <th>Trip</th>
+                                <th>Driver</th>
+                                <th>Departure</th>
+                                <th>Distance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in recent_routes %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'routing:route_detail' r.pk %}">{{ r.route_code }}</a></td>
+                                <td>{{ r.starting_location }} &rarr; {{ r.destination }}</td>
+                                <td>{{ r.driver.name }}</td>
+                                <td>{{ r.departure_datetime|date:"d M Y, H:i" }}</td>
+                                <td>{{ r.distance_km }} km</td>
+                                <td><span class="badge bg-{{ r.status_badge_class }}">{{ r.status }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">No transportation routes logged for this vehicle.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Maintenance Tab -->
+            <div class="tab-pane fade p-3" id="maint" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Workshop & Technician</th>
+                                <th>Odometer</th>
+                                <th>Cost</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in maintenance_history %}
+                            <tr>
+                                <td>{{ m.service_date|date:"d M Y" }}</td>
+                                <td class="fw-semibold"><a href="{% url 'maintenance:maintenance_detail' m.pk %}">{{ m.maintenance_type }}</a></td>
+                                <td>{{ m.workshop_name }} ({{ m.technician_name }})</td>
+                                <td>{{ m.odometer_reading|intcomma }} km</td>
+                                <td class="fw-bold">₹ {{ m.total_cost|intcomma }}</td>
+                                <td><span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">No maintenance records on file.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Fuel Tab -->
+            <div class="tab-pane fade p-3" id="fuel" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Quantity</th>
+                                <th>Price/L</th>
+                                <th>Total Cost</th>
+                                <th>Odometer</th>
+                                <th>Calculated Mileage</th>
+                                <th>Fuel Station</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in fuel_history %}
+                            <tr>
+                                <td>{{ f.fuel_date|date:"d M Y" }}</td>
+                                <td>{{ f.fuel_quantity }} L</td>
+                                <td>₹ {{ f.fuel_price_per_litre }}</td>
+                                <td class="fw-bold text-navy">₹ {{ f.total_fuel_cost|intcomma }}</td>
+                                <td>{{ f.odometer_reading|intcomma }} km</td>
+                                <td>
+                                    {% if f.calculated_mileage > 0 %}
+                                    <span class="badge bg-info text-dark">{{ f.calculated_mileage }} km/L</span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ f.fuel_station }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center py-4 text-muted">No fuel purchase records for this vehicle.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Safety Tab -->
+            <div class="tab-pane fade p-3" id="safety" role="tabpanel">
+                <h6 class="fw-bold text-navy mb-3"><i class="bi bi-shield-exclamation text-danger me-1"></i>Incident Records</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Date & Location</th>
+                                <th>Severity</th>
+                                <th>Estimated Cost</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inc in safety_incidents %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'safety:incident_detail' inc.pk %}">{{ inc.incident_id }}</a></td>
+                                <td>{{ inc.incident_type }}</td>
+                                <td>{{ inc.incident_date|date:"d M Y" }} ({{ inc.incident_location }})</td>
+                                <td><span class="badge bg-{{ inc.severity_badge_class }}">{{ inc.damage_severity }}</span></td>
+                                <td>₹ {{ inc.estimated_damage_cost|intcomma }}</td>
+                                <td><span class="badge bg-{{ inc.status_badge_class }}">{{ inc.status }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-3 text-muted">Zero reported safety incidents for this vehicle!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold text-navy mb-3"><i class="bi bi-clipboard2-check text-primary me-1"></i>Roadworthiness Inspections</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Inspection ID</th>
+                                <th>Date</th>
+                                <th>Inspector</th>
+                                <th>Brakes</th>
+                                <th>Tyres</th>
+                                <th>Lights</th>
+                                <th>Documents</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for insp in inspections %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'safety:inspection_detail' insp.pk %}">{{ insp.inspection_id }}</a></td>
+                                <td>{{ insp.inspection_date|date:"d M Y" }}</td>
+                                <td>{{ insp.inspector_name }}</td>
+                                <td>{{ insp.brake_condition }}</td>
+                                <td>{{ insp.tyre_condition }}</td>
+                                <td>{{ insp.lights_condition }}</td>
+                                <td>{{ insp.documents_verification }}</td>
+                                <td><span class="badge bg-{{ insp.result_badge_class }}">{{ insp.overall_inspection_result }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="text-center py-3 text-muted">No safety inspection entries recorded.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

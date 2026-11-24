@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="form-card">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-navy"><i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>{{ title }}</h5>
+                <a href="{% url 'safety:incident_list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Incidents
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.incident_id.id_for_label }}" class="form-label">Incident Reference ID *</label>
+                        {{ form.incident_id }}
+                        {% if form.incident_id.errors %}<div class="text-danger small mt-1">{{ form.incident_id.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.vehicle.id_for_label }}" class="form-label">Vehicle Involved *</label>
+                        {{ form.vehicle }}
+                        {% if form.vehicle.errors %}<div class="text-danger small mt-1">{{ form.vehicle.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.driver.id_for_label }}" class="form-label">Driver at Time of Incident</label>
+                        {{ form.driver }}
+                        {% if form.driver.errors %}<div class="text-danger small mt-1">{{ form.driver.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.incident_date.id_for_label }}" class="form-label">Date of Occurrence *</label>
+                        {{ form.incident_date }}
+                        {% if form.incident_date.errors %}<div class="text-danger small mt-1">{{ form.incident_date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <label for="{{ form.incident_location.id_for_label }}" class="form-label">Exact Location / Highway / Landmark *</label>
+                        {{ form.incident_location }}
+                        {% if form.incident_location.errors %}<div class="text-danger small mt-1">{{ form.incident_location.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.incident_type.id_for_label }}" class="form-label">Incident Category *</label>
+                        {{ form.incident_type }}
+                        {% if form.incident_type.errors %}<div class="text-danger small mt-1">{{ form.incident_type.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.damage_severity.id_for_label }}" class="form-label">Damage Severity *</label>
+                        {{ form.damage_severity }}
+                        {% if form.damage_severity.errors %}<div class="text-danger small mt-1">{{ form.damage_severity.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.estimated_damage_cost.id_for_label }}" class="form-label">Estimated Repair / Loss (₹)</label>
+                        {{ form.estimated_damage_cost }}
+                        {% if form.estimated_damage_cost.errors %}<div class="text-danger small mt-1">{{ form.estimated_damage_cost.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Narrative of Incident *</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.action_taken.id_for_label }}" class="form-label">Corrective & Legal Actions Taken *</label>
+                    {{ form.action_taken }}
+                    {% if form.action_taken.errors %}<div class="text-danger small mt-1">{{ form.action_taken.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.status.id_for_label }}" class="form-label">Incident Status *</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'safety:incident_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-shield-check me-1"></i> Save Incident Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

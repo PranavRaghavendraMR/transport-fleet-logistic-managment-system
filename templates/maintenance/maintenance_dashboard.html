@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Workshop Maintenance Dashboard{% endblock %}
+{% block page_title %}Vehicle Workshop & Maintenance Command{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="fw-bold mb-1" style="color: #0b2239;">Workshop & Maintenance Operations</h4>
+        <p class="text-muted small mb-0">Monitor vehicle servicing, preventive maintenance, repair costs, and workshop technicians.</p>
+    </div>
+    {% if is_maintenance_staff %}
+    <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-fms-primary">
+        <i class="bi bi-tools me-1"></i> Log Workshop Service
+    </a>
+    {% endif %}
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Total Records</div>
+                    <div class="kpi-value">{{ total_records }}</div>
+                    <small class="text-muted">Work Orders</small>
+                </div>
+                <div class="kpi-icon bg-icon-primary"><i class="bi bi-card-checklist"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card h-100 border-start border-warning border-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">In Progress</div>
+                    <div class="kpi-value text-warning">{{ in_progress_count }}</div>
+                    <small class="text-muted">{{ scheduled_count }} Scheduled</small>
+                </div>
+                <div class="kpi-icon bg-icon-warning"><i class="bi bi-gear-wide-connected"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card h-100 border-start border-success border-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Completed Work</div>
+                    <div class="kpi-value text-success">{{ completed_count }}</div>
+                    <small class="text-muted">Repairs Closed</small>
+                </div>
+                <div class="kpi-icon bg-icon-success"><i class="bi bi-check2-circle"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card h-100 border-start border-danger border-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="kpi-title">Maintenance Costs</div>
+                    <div class="kpi-value text-danger" style="font-size: 1.5rem;">₹ {{ total_cost|intcomma }}</div>
+                    <small class="text-muted">Parts: ₹ {{ total_spare_cost|intcomma }} &bull; Labour: ₹ {{ total_labour_cost|intcomma }}</small>
+                </div>
+                <div class="kpi-icon bg-icon-danger"><i class="bi bi-cash-stack"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overdue Servicing Alert Callout -->
+{% if overdue_records %}
+<div class="alert alert-danger shadow-sm mb-4">
+    <div class="d-flex align-items-center mb-2">
+        <i class="bi bi-exclamation-triangle-fill fs-4 me-2"></i>
+        <h6 class="mb-0 fw-bold">Overdue Vehicle Servicing Alert</h6>
+    </div>
+    <p class="small mb-2">The following vehicles have scheduled maintenance dates that are past due and require urgent depot attention:</p>
+    <div class="row g-2">
+        {% for ov in overdue_records %}
+        <div class="col-md-4">
+            <div class="bg-white p-2 rounded border border-danger small">
+                <strong><a href="{% url 'maintenance:maintenance_detail' ov.pk %}">{{ ov.vehicle.registration_number }}</a></strong> &bull; {{ ov.maintenance_type }}<br>
+                <span class="text-danger fw-semibold">Scheduled Date: {{ ov.service_date|date:"d M Y" }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Upcoming & Breakdown Tables -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-calendar-check text-primary me-2"></i>Upcoming Scheduled Maintenance</h6>
+                <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-sm btn-link text-decoration-none">Full Directory</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Maintenance Type</th>
+                                <th>Service Date</th>
+                                <th>Workshop</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in upcoming_records %}
+                            <tr>
+                                <td class="fw-bold"><a href="{% url 'maintenance:maintenance_detail' m.pk %}">{{ m.vehicle.registration_number }}</a></td>
+                                <td>{{ m.maintenance_type }}</td>
+                                <td>{{ m.service_date|date:"d M Y" }}</td>
+                                <td>{{ m.workshop_name }}</td>
+                                <td><span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No scheduled maintenance tasks ahead.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Type Expense Breakdown -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-navy"><i class="bi bi-pie-chart text-primary me-2"></i>Expenses by Maintenance Category</h6>
+            </div>
+            <div class="card-body p-3">
+                <ul class="list-group list-group-flush">
+                    {% for t in type_breakdown %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
+                        <div>
+                            <strong>{{ t.maintenance_type }}</strong>
+                            <div class="text-muted small">{{ t.count }} work order{{ t.count|pluralize }}</div>
+                        </div>
+                        <span class="fw-bold text-navy">₹ {{ t.total_cost|intcomma }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-3 text-muted">No maintenance cost data recorded yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

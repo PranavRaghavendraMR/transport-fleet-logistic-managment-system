@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign In - Transport Fleet Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-md-8 col-lg-5 col-xl-4">
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-white shadow-sm border mb-3">
+                <i class="bi bi-truck text-primary fs-1"></i>
+            </div>
+            <h3 class="fw-bold text-navy mb-1" style="color: #0b2239;">Transport FMS</h3>
+            <p class="text-muted small">Chanakya University &bull; Full Stack Project (DAT501)</p>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-navy text-white text-center py-3" style="background-color: #0b2239; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+                <h5 class="mb-0 fw-semibold">Sign In to Fleet Portal</h5>
+                <small class="text-white-50">Role-based Authentication</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="{% url 'accounts:login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                            <input type="text" name="username" id="username" class="form-control" required placeholder="Enter username" autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                            <input type="password" name="password" id="password" class="form-control" required placeholder="Enter password">
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-fms-primary py-2 fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Authenticate & Enter
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-light p-3 text-center border-top">
+                <div class="small fw-semibold text-muted mb-2">Demonstration User Roles:</div>
+                <div class="d-flex flex-wrap justify-content-center gap-1 small">
+                    <span class="badge bg-secondary">admin / Admin@123</span>
+                    <span class="badge bg-secondary">manager / Manager@123</span>
+                    <span class="badge bg-secondary">mechanic / Mechanic@123</span>
+                    <span class="badge bg-secondary">staff / Staff@123</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center text-muted small">
+            <div>Chanakya University &bull; School of Engineering</div>
+            <div>BCA V Semester &bull; Candidate: Pranavraghavendra M R (24UG00220)</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

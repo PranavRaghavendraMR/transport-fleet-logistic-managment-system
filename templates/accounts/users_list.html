@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management{% endblock %}
+{% block page_title %}System Users & Role-Based Access Control{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1" style="color: #0b2239;">User Access & Role Management</h4>
+        <p class="text-muted small mb-0">Strict role-based authorization for Administrator, Fleet Manager, Maintenance Staff, and General Staff.</p>
+    </div>
+    <a href="/admin/auth/user/add/" target="_blank" class="btn btn-sm btn-fms-primary">
+        <i class="bi bi-person-plus-fill me-1"></i> Create New User
+    </a>
+</div>
+
+<div class="fms-table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>User / Employee</th>
+                    <th>Email & Contact</th>
+                    <th>Department</th>
+                    <th>Current Role</th>
+                    <th>Status</th>
+                    <th class="text-end">Manage Role & Access</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div class="fw-bold text-navy">{{ u.get_full_name|default:u.username }}</div>
+                        <small class="text-muted">Username: <code>{{ u.username }}</code> &bull; ID: {{ u.profile.employee_id|default:"-" }}</small>
+                    </td>
+                    <td>
+                        <div><i class="bi bi-envelope text-muted me-1"></i>{{ u.email|default:"Not specified" }}</div>
+                        <small class="text-muted"><i class="bi bi-telephone text-muted me-1"></i>{{ u.profile.phone|default:"-" }}</small>
+                    </td>
+                    <td>{{ u.profile.department|default:"Operations" }}</td>
+                    <td>
+                        <span class="badge bg-primary fs-7">{{ u.profile.get_role_display|default:"General Staff" }}</span>
+                    </td>
+                    <td>
+                        {% if u.is_active %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form method="post" class="d-inline-flex align-items-center gap-1 justify-content-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ u.id }}">
+                            <input type="hidden" name="action" value="change_role">
+                            <select name="role" class="form-select form-select-sm" style="width: auto;">
+                                {% for r_code, r_name in role_choices %}
+                                <option value="{{ r_code }}" {% if u.profile.role == r_code %}selected{% endif %}>{{ r_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Update Role">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </form>
+
+                        {% if u != request.user %}
+                        <form method="post" class="d-inline ms-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ u.id }}">
+                            <input type="hidden" name="action" value="toggle_status">
+                            {% if u.is_active %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate Account" onclick="return confirm('Are you sure you want to disable this user account?');">
+                                <i class="bi bi-person-x"></i>
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="Activate Account">
+                                <i class="bi bi-person-check"></i>
+                            </button>
+                            {% endif %}
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
