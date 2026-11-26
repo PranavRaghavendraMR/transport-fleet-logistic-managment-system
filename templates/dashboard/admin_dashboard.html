@@ -2,325 +2,619 @@
 {% load humanize %}
 
 {% block title %}Executive Dashboard{% endblock %}
-{% block page_title %}Executive Fleet & Operations Dashboard{% endblock %}
+{% block breadcrumb_item %}Executive Dashboard{% endblock %}
+{% block page_title %}Executive Fleet & Logistics Operations Center{% endblock %}
 
 {% block content %}
-<!-- Top Quick Action Bar -->
-<div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
-    <div>
-        <h4 class="fw-bold mb-1" style="color: #0b2239;">Live Fleet Operational Center</h4>
-        <p class="text-muted small mb-0">Real-time status monitoring, maintenance schedules, fuel efficiency and safety telemetry.</p>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        {% if is_fleet_manager %}
-        <a href="{% url 'fleet:vehicle_create' %}" class="btn btn-sm btn-fms-primary">
-            <i class="bi bi-plus-circle me-1"></i> Add Vehicle
-        </a>
-        <a href="{% url 'routing:route_create' %}" class="btn btn-sm btn-fms-sky">
-            <i class="bi bi-signpost-2 me-1"></i> Dispatch Route
-        </a>
-        {% endif %}
-        {% if is_maintenance_staff %}
-        <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-tools me-1"></i> Log Maintenance
-        </a>
-        {% endif %}
-        <a href="{% url 'fuel:fuel_create' %}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-fuel-pump me-1"></i> Record Fuel
-        </a>
-        <a href="{% url 'safety:incident_create' %}" class="btn btn-sm btn-outline-danger">
-            <i class="bi bi-exclamation-triangle me-1"></i> Report Incident
-        </a>
+<!-- Quick Action & Header Section -->
+<div class="dashboard-header-card mb-4 p-3 p-md-4 rounded-3 border">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="live-pulse-dot" title="Real-time Operational Telemetry"></span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle text-uppercase fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">Live Fleet Telemetry</span>
+                <span class="text-muted small d-none d-md-inline">&bull; Real-time status monitoring, maintenance cycles, and fuel economics</span>
+            </div>
+            <h3 class="fw-bold mb-1 header-gradient-text">Operations Command & Intelligence</h3>
+            <p class="text-muted small mb-0">Centralized control plane for vehicles, active assignments, technical servicing, and road compliance.</p>
+        </div>
+        
+        <!-- Role-Specific Action Triggers -->
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            {% if is_fleet_manager or is_admin %}
+            <a href="{% url 'fleet:vehicle_create' %}" class="btn btn-sm btn-fms-primary d-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add Vehicle</span>
+            </a>
+            <a href="{% url 'routing:route_create' %}" class="btn btn-sm btn-fms-sky d-flex align-items-center gap-1 shadow-sm">
+                <i class="bi bi-signpost-2"></i>
+                <span>Dispatch Route</span>
+            </a>
+            {% endif %}
+            {% if is_maintenance_staff or is_admin %}
+            <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1">
+                <i class="bi bi-tools"></i>
+                <span>Log Maintenance</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'fuel:fuel_create' %}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                <i class="bi bi-fuel-pump"></i>
+                <span>Record Fuel</span>
+            </a>
+            <a href="{% url 'safety:incident_create' %}" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span>Report Incident</span>
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- 10 KPI CARDS ROW -->
+<!-- ==========================================
+     PRIMARY 8 KPI CARDS (Live Database Driven)
+     ========================================== -->
 <div class="row g-3 mb-4">
     <!-- 1. Total Vehicles -->
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="kpi-card h-100">
-            <div class="d-flex align-items-center justify-content-between">
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-title">Total Fleet</div>
-                    <div class="kpi-value">{{ total_vehicles }}</div>
-                    <small class="text-muted">Registered</small>
+                    <span class="kpi-metric-label">Total Fleet</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1">{{ total_vehicles }}</h3>
+                    <div class="kpi-subtext mt-1 text-muted">
+                        <i class="bi bi-check-circle text-success me-1"></i>All Registered
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-primary"><i class="bi bi-truck"></i></div>
+                <div class="kpi-metric-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
             </div>
         </div>
     </div>
 
-    <!-- 2. Available Vehicles -->
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="kpi-card h-100">
-            <div class="d-flex align-items-center justify-content-between">
+    <!-- 2. Active Vehicles (In Use) -->
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-title">Available</div>
-                    <div class="kpi-value text-success">{{ available_vehicles }}</div>
-                    <small class="text-success fw-semibold"><i class="bi bi-check-circle"></i> Ready</small>
+                    <span class="kpi-metric-label">Active (In Use)</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1 text-primary">{{ in_use_vehicles }}</h3>
+                    <div class="kpi-subtext mt-1 text-primary">
+                        <i class="bi bi-geo-alt-fill me-1"></i>{{ fleet_utilization_rate }}% Utilization
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-success"><i class="bi bi-check2-circle"></i></div>
+                <div class="kpi-metric-icon bg-info-subtle text-info">
+                    <i class="bi bi-speedometer"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ fleet_utilization_rate }}%"></div>
             </div>
         </div>
     </div>
 
-    <!-- 3. Vehicles In Use -->
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="kpi-card h-100">
-            <div class="d-flex align-items-center justify-content-between">
+    <!-- 3. Available Vehicles -->
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-title">In Use</div>
-                    <div class="kpi-value text-primary">{{ in_use_vehicles }}</div>
-                    <small class="text-primary fw-semibold"><i class="bi bi-geo-alt"></i> On Road</small>
+                    <span class="kpi-metric-label">Available</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1 text-success">{{ available_vehicles }}</h3>
+                    <div class="kpi-subtext mt-1 text-success">
+                        <i class="bi bi-shield-check me-1"></i>{{ available_rate }}% Dispatch Ready
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-sky"><i class="bi bi-speedometer"></i></div>
+                <div class="kpi-metric-icon bg-success-subtle text-success">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ available_rate }}%"></div>
             </div>
         </div>
     </div>
 
-    <!-- 4. Under Maintenance -->
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="kpi-card h-100">
-            <div class="d-flex align-items-center justify-content-between">
+    <!-- 4. Vehicles Under Maintenance -->
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-title">Maintenance</div>
-                    <div class="kpi-value text-danger">{{ maintenance_vehicles }}</div>
-                    <small class="text-danger fw-semibold"><i class="bi bi-wrench"></i> Workshop</small>
+                    <span class="kpi-metric-label">In Maintenance</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1 text-danger">{{ maintenance_vehicles }}</h3>
+                    <div class="kpi-subtext mt-1 text-danger">
+                        <i class="bi bi-wrench me-1"></i>{{ maintenance_rate }}% in Workshop
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-danger"><i class="bi bi-gear-wide"></i></div>
+                <div class="kpi-metric-icon bg-danger-subtle text-danger">
+                    <i class="bi bi-gear-wide-connected"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ maintenance_rate }}%"></div>
             </div>
         </div>
     </div>
 
     <!-- 5. Total Drivers -->
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="kpi-card h-100">
-            <div class="d-flex align-items-center justify-content-between">
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-title">Active Drivers</div>
-                    <div class="kpi-value">{{ active_drivers }}</div>
-                    <small class="text-muted">of {{ total_drivers }} total</small>
+                    <span class="kpi-metric-label">Total Drivers</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1">{{ total_drivers }}</h3>
+                    <div class="kpi-subtext mt-1 text-muted">
+                        <span class="text-success fw-semibold"><i class="bi bi-person-check-fill me-1"></i>{{ active_drivers }} Active</span>
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-info"><i class="bi bi-people"></i></div>
+                <div class="kpi-metric-icon bg-secondary-subtle text-secondary">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%"></div>
             </div>
         </div>
     </div>
 
-    <!-- 6. Active Routes -->
-    <div class="col-6 col-md-4 col-xl-2">
-        <div class="kpi-card h-100">
-            <div class="d-flex align-items-center justify-content-between">
+    <!-- 6. Pending Maintenance -->
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="kpi-title">Active Routes</div>
-                    <div class="kpi-value">{{ active_routes }}</div>
-                    <small class="text-primary">{{ in_transit_routes }} In Transit</small>
+                    <span class="kpi-metric-label">Pending Maintenance</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1 text-warning">{{ pending_maintenance }}</h3>
+                    <div class="kpi-subtext mt-1 text-muted">
+                        <i class="bi bi-clock-history me-1"></i>Scheduled & In Progress
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-sky"><i class="bi bi-signpost-split"></i></div>
+                <div class="kpi-metric-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-tools"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {% if total_vehicles %}{% widthratio pending_maintenance total_vehicles 100 %}{% else %}0{% endif %}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Safety Incidents -->
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="kpi-metric-label">Safety Incidents</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1 text-danger">{{ total_safety_incidents }}</h3>
+                    <div class="kpi-subtext mt-1 text-muted">
+                        <span class="text-danger fw-semibold"><i class="bi bi-exclamation-octagon me-1"></i>{{ open_incidents_count }} Active</span>
+                    </div>
+                </div>
+                <div class="kpi-metric-icon bg-danger-subtle text-danger">
+                    <i class="bi bi-shield-exclamation"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: {% if total_safety_incidents %}{% widthratio open_incidents_count total_safety_incidents 100 %}{% else %}0{% endif %}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Total Fuel Consumption -->
+    <div class="col-6 col-md-3 col-xl-3">
+        <div class="kpi-metric-card h-100 p-3 rounded-3 border">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="kpi-metric-label">Total Fuel Burn</span>
+                    <h3 class="kpi-metric-value mb-0 mt-1 text-navy" style="font-size: 1.45rem;">
+                        {{ total_fuel_litres|floatformat:1 }} <small class="fs-6 text-muted">L</small>
+                    </h3>
+                    <div class="kpi-subtext mt-1 text-muted">
+                        <span class="fw-semibold text-primary">₹ {{ total_fuel_cost|intcomma }}</span> &bull; {{ avg_fleet_mileage }} km/L
+                    </div>
+                </div>
+                <div class="kpi-metric-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-droplet-half"></i>
+                </div>
+            </div>
+            <div class="progress mt-3 kpi-progress">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 85%"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Financial & Safety Secondary KPI Row -->
+<!-- ==========================================
+     ANALYTICS & CHARTS SECTION (5 SaaS Charts)
+     ========================================== -->
 <div class="row g-3 mb-4">
-    <!-- 7. Pending Maintenance -->
-    <div class="col-md-3">
-        <div class="kpi-card h-100 border-start border-warning border-4">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="kpi-title">Pending Maintenance</div>
-                    <div class="kpi-value">{{ pending_maintenance }}</div>
-                    <small class="text-muted">Scheduled / In Progress</small>
+    <!-- Chart 1: Vehicle Status Distribution -->
+    <div class="col-lg-4 col-xl-4">
+        <div class="chart-container-card h-100 p-3 p-md-4 rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="chart-badge-icon bg-success-subtle text-success"><i class="bi bi-pie-chart-fill"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Vehicle Status Distribution</h6>
+                        <small class="text-muted">Real-time fleet readiness split</small>
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-warning"><i class="bi bi-tools"></i></div>
+                <span class="badge bg-light text-dark border">Live</span>
+            </div>
+            <div class="chart-canvas-wrapper position-relative" style="height: 230px;">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="d-flex justify-content-around mt-3 pt-2 border-top text-center">
+                <div>
+                    <span class="status-legend-dot bg-success"></span>
+                    <span class="small fw-semibold d-block text-success">{{ available_vehicles }} ({{ available_rate }}%)</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Available</small>
+                </div>
+                <div>
+                    <span class="status-legend-dot bg-primary"></span>
+                    <span class="small fw-semibold d-block text-primary">{{ in_use_vehicles }} ({{ fleet_utilization_rate }}%)</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">In Use</small>
+                </div>
+                <div>
+                    <span class="status-legend-dot bg-danger"></span>
+                    <span class="small fw-semibold d-block text-danger">{{ maintenance_vehicles }} ({{ maintenance_rate }}%)</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Maintenance</small>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 8. Total Fuel Expenses -->
-    <div class="col-md-3">
-        <div class="kpi-card h-100 border-start border-primary border-4">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="kpi-title">Total Fuel Expenses</div>
-                    <div class="kpi-value" style="font-size: 1.5rem;">₹ {{ total_fuel_cost|intcomma }}</div>
-                    <small class="text-muted">Lifetime Fleet Refuels</small>
+    <!-- Chart 2: Fleet Utilization by Vehicle Type -->
+    <div class="col-lg-4 col-xl-4">
+        <div class="chart-container-card h-100 p-3 p-md-4 rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="chart-badge-icon bg-info-subtle text-info"><i class="bi bi-bar-chart-steps"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Fleet Utilization by Type</h6>
+                        <small class="text-muted">Active deployment vs inventory</small>
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-sky"><i class="bi bi-fuel-pump"></i></div>
+                <span class="badge bg-light text-dark border">Categories</span>
+            </div>
+            <div class="chart-canvas-wrapper position-relative" style="height: 260px;">
+                <canvas id="utilizationChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- 9. Total Maintenance Expenses -->
-    <div class="col-md-3">
-        <div class="kpi-card h-100 border-start border-danger border-4">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="kpi-title">Maintenance Costs</div>
-                    <div class="kpi-value" style="font-size: 1.5rem;">₹ {{ total_maintenance_cost|intcomma }}</div>
-                    <small class="text-muted">Parts & Labour</small>
+    <!-- Chart 5: Safety Incident Trends & Severity -->
+    <div class="col-lg-4 col-xl-4">
+        <div class="chart-container-card h-100 p-3 p-md-4 rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="chart-badge-icon bg-danger-subtle text-danger"><i class="bi bi-shield-shaded"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Safety & Severity Analysis</h6>
+                        <small class="text-muted">Risk impact & incident breakdown</small>
+                    </div>
                 </div>
-                <div class="kpi-icon bg-icon-danger"><i class="bi bi-cash-coin"></i></div>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Audit</span>
             </div>
-        </div>
-    </div>
-
-    <!-- 10. Reported Safety Incidents -->
-    <div class="col-md-3">
-        <div class="kpi-card h-100 border-start border-danger border-4">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="kpi-title">Open Safety Incidents</div>
-                    <div class="kpi-value text-danger">{{ open_incidents_count }}</div>
-                    <small class="text-muted">Requiring Action</small>
-                </div>
-                <div class="kpi-icon bg-icon-warning"><i class="bi bi-shield-exclamation"></i></div>
+            <div class="chart-canvas-wrapper position-relative" style="height: 260px;">
+                <canvas id="safetySeverityChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- CHARTS ROW -->
 <div class="row g-3 mb-4">
-    <!-- Vehicle Status Doughnut -->
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart text-primary me-2"></i>Fleet Status Distribution</h6>
+    <!-- Chart 3: Monthly Fuel Consumption (Litres & Expense) -->
+    <div class="col-lg-6">
+        <div class="chart-container-card h-100 p-3 p-md-4 rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="chart-badge-icon bg-primary-subtle text-primary"><i class="bi bi-fuel-pump-fill"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Monthly Fuel Consumption (L) & Spend (₹)</h6>
+                        <small class="text-muted">Rolling 6-month consumption telemetry</small>
+                    </div>
+                </div>
+                <span class="badge bg-light text-dark border">6 Months</span>
             </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                <div style="height: 240px; width: 100%;">
-                    <canvas id="statusChart"></canvas>
-                </div>
-                <div class="d-flex justify-content-around w-100 mt-3 small text-center">
-                    <div><span class="badge bg-success mb-1">{{ available_vehicles }}</span><br>Available</div>
-                    <div><span class="badge bg-primary mb-1">{{ in_use_vehicles }}</span><br>In Use</div>
-                    <div><span class="badge bg-danger mb-1">{{ maintenance_vehicles }}</span><br>Maintenance</div>
-                </div>
+            <div class="chart-canvas-wrapper position-relative" style="height: 260px;">
+                <canvas id="fuelTrendChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Monthly Operational Expenses (Fuel vs Maintenance) -->
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up text-primary me-2"></i>Monthly Operational Expenses Trend (₹)</h6>
-                <span class="badge bg-light text-dark border">Last 6 Months</span>
-            </div>
-            <div class="card-body p-3">
-                <div style="height: 270px; width: 100%;">
-                    <canvas id="expensesChart"></canvas>
+    <!-- Chart 4: Maintenance Cost Analysis -->
+    <div class="col-lg-6">
+        <div class="chart-container-card h-100 p-3 p-md-4 rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="chart-badge-icon bg-warning-subtle text-warning"><i class="bi bi-cash-stack"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Maintenance Cost & Expense Curve (₹)</h6>
+                        <small class="text-muted">Workshop servicing & replacement expenses</small>
+                    </div>
                 </div>
+                <span class="badge bg-light text-dark border">Cumulative</span>
+            </div>
+            <div class="chart-canvas-wrapper position-relative" style="height: 260px;">
+                <canvas id="maintenanceCostChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- RECENT ACTIVITIES & COMPLIANCE ALERTS ROW -->
+<!-- ==========================================
+     RECENT ACTIVITY (4 Tabs for All Modules)
+     ========================================== -->
 <div class="row g-3 mb-4">
-    <!-- Recent Transportation Routes -->
-    <div class="col-lg-7">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold"><i class="bi bi-signpost-split text-primary me-2"></i>Recent Transportation Activities</h6>
-                <a href="{% url 'routing:route_list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Code</th>
-                                <th>Route</th>
-                                <th>Vehicle / Driver</th>
-                                <th>Departure</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in recent_routes %}
-                            <tr>
-                                <td class="fw-bold"><a href="{% url 'routing:route_detail' r.pk %}">{{ r.route_code }}</a></td>
-                                <td>
-                                    <div class="small fw-semibold">{{ r.starting_location }} &rarr; {{ r.destination }}</div>
-                                    <small class="text-muted">{{ r.distance_km }} km &bull; {{ r.estimated_duration_hours }} hrs</small>
-                                </td>
-                                <td>
-                                    <div><i class="bi bi-truck text-muted me-1"></i>{{ r.vehicle.registration_number }}</div>
-                                    <small class="text-muted"><i class="bi bi-person me-1"></i>{{ r.driver.name }}</small>
-                                </td>
-                                <td><small>{{ r.departure_datetime|date:"d M, H:i" }}</small></td>
-                                <td>
-                                    <span class="badge bg-{{ r.status_badge_class }}">{{ r.status }}</span>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="5" class="text-center py-4 text-muted">No transportation routes scheduled yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    <div class="col-xl-8">
+        <div class="activity-card p-3 p-md-4 rounded-3 border h-100">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 border-bottom pb-2">
+                <div>
+                    <h5 class="fw-bold mb-0"><i class="bi bi-activity text-primary me-2"></i>Multi-Module Activity Ledger</h5>
+                    <small class="text-muted">Real-time operations feed across all enterprise modules</small>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upcoming Maintenance & Compliance -->
-    <div class="col-lg-5">
-        <!-- Upcoming Workshop Reminders -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold text-danger"><i class="bi bi-tools me-2"></i>Upcoming Workshop Reminders</h6>
-                <a href="{% url 'maintenance:maintenance_list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
-            </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    {% for m in upcoming_maintenance %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
-                        <div>
-                            <div class="fw-semibold text-dark">{{ m.vehicle.registration_number }} - {{ m.maintenance_type }}</div>
-                            <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ m.service_date|date:"d M Y" }} &bull; {{ m.workshop_name }}</small>
-                        </div>
-                        <span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span>
+                <ul class="nav nav-pills fms-pills" id="activityTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active py-1 px-3 small" id="routes-tab" data-bs-toggle="pill" data-bs-target="#tab-routes" type="button" role="tab">Routes</button>
                     </li>
-                    {% empty %}
-                    <li class="list-group-item text-center py-3 text-muted">No upcoming maintenance jobs scheduled.</li>
-                    {% endfor %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-1 px-3 small" id="vehicles-tab" data-bs-toggle="pill" data-bs-target="#tab-vehicles" type="button" role="tab">Vehicles</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-1 px-3 small" id="maint-tab" data-bs-toggle="pill" data-bs-target="#tab-maint" type="button" role="tab">Maintenance</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-1 px-3 small" id="safety-tab" data-bs-toggle="pill" data-bs-target="#tab-safety" type="button" role="tab">Safety</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-1 px-3 small" id="fuel-tab" data-bs-toggle="pill" data-bs-target="#tab-fuel" type="button" role="tab">Fuel</button>
+                    </li>
                 </ul>
             </div>
+
+            <div class="tab-content" id="activityTabsContent">
+                <!-- Tab 1: Recent Routes -->
+                <div class="tab-pane fade show active" id="tab-routes" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Route</th>
+                                    <th>Vehicle & Driver</th>
+                                    <th>Departure</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in recent_routes %}
+                                <tr>
+                                    <td class="fw-bold"><a href="{% url 'routing:route_detail' r.pk %}" class="text-primary text-decoration-none">{{ r.route_code }}</a></td>
+                                    <td>
+                                        <div class="small fw-semibold">{{ r.starting_location }} &rarr; {{ r.destination }}</div>
+                                        <small class="text-muted">{{ r.distance_km }} km &bull; {{ r.estimated_duration_hours }} hrs</small>
+                                    </td>
+                                    <td>
+                                        <div class="small"><i class="bi bi-truck text-muted me-1"></i>{{ r.vehicle.registration_number }}</div>
+                                        <small class="text-muted"><i class="bi bi-person me-1"></i>{{ r.driver.name }}</small>
+                                    </td>
+                                    <td><small>{{ r.departure_datetime|date:"d M, H:i" }}</small></td>
+                                    <td><span class="badge bg-{{ r.status_badge_class }}">{{ r.status }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No transportation routes scheduled yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Recent Vehicle Updates -->
+                <div class="tab-pane fade" id="tab-vehicles" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Registration</th>
+                                    <th>Vehicle Spec</th>
+                                    <th>Odometer</th>
+                                    <th>Fuel Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for v in recent_vehicles %}
+                                <tr>
+                                    <td class="fw-bold"><a href="{% url 'fleet:vehicle_detail' v.pk %}" class="text-decoration-none">{{ v.registration_number }}</a></td>
+                                    <td>
+                                        <div class="small fw-semibold">{{ v.manufacturer }} {{ v.model_name }}</div>
+                                        <small class="text-muted">{{ v.vehicle_type }} &bull; {{ v.capacity_kg|intcomma }} kg</small>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">{{ v.current_odometer|intcomma }} km</span></td>
+                                    <td><small class="text-muted">{{ v.fuel_type }}</small></td>
+                                    <td>
+                                        {% if v.status == 'Available' %}
+                                        <span class="badge bg-success">Available</span>
+                                        {% elif v.status == 'In Use' %}
+                                        <span class="badge bg-primary">In Use</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Maintenance</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No vehicle records available.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Recent Maintenance -->
+                <div class="tab-pane fade" id="tab-maint" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Service Type</th>
+                                    <th>Workshop & Tech</th>
+                                    <th>Date</th>
+                                    <th>Expense</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in recent_maintenance %}
+                                <tr>
+                                    <td class="fw-bold"><a href="{% url 'maintenance:maintenance_detail' m.pk %}" class="text-decoration-none">{{ m.vehicle.registration_number }}</a></td>
+                                    <td><small class="fw-semibold">{{ m.maintenance_type }}</small></td>
+                                    <td>
+                                        <div class="small">{{ m.workshop_name }}</div>
+                                        <small class="text-muted">{{ m.technician_name|default:"Assigned Crew" }}</small>
+                                    </td>
+                                    <td><small>{{ m.service_date|date:"d M Y" }}</small></td>
+                                    <td class="fw-semibold text-danger">₹ {{ m.total_cost|intcomma }}</td>
+                                    <td><span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No maintenance orders logged yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Safety Incidents -->
+                <div class="tab-pane fade" id="tab-safety" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Incident ID</th>
+                                    <th>Vehicle</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inc in recent_incidents %}
+                                <tr>
+                                    <td class="fw-bold"><a href="{% url 'safety:incident_detail' inc.pk %}" class="text-danger text-decoration-none">{{ inc.incident_id }}</a></td>
+                                    <td>{{ inc.vehicle.registration_number }}</td>
+                                    <td><small>{{ inc.incident_type }}</small></td>
+                                    <td>
+                                        {% if inc.damage_severity == 'Critical' %}
+                                        <span class="badge bg-danger">Critical</span>
+                                        {% elif inc.damage_severity == 'High' %}
+                                        <span class="badge bg-warning text-dark">High</span>
+                                        {% elif inc.damage_severity == 'Medium' %}
+                                        <span class="badge bg-info text-dark">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small>{{ inc.incident_date|date:"d M Y" }}</small></td>
+                                    <td><span class="badge bg-light text-dark border">{{ inc.status }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No safety incidents reported.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Fuel Transactions -->
+                <div class="tab-pane fade" id="tab-fuel" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 fms-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Quantity</th>
+                                    <th>Cost</th>
+                                    <th>Station / Vendor</th>
+                                    <th>Odometer</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for f in recent_fuel %}
+                                <tr>
+                                    <td class="fw-bold"><a href="{% url 'fuel:fuel_detail' f.pk %}" class="text-decoration-none">{{ f.vehicle.registration_number }}</a></td>
+                                    <td><span class="fw-semibold text-primary">{{ f.fuel_quantity }} L</span></td>
+                                    <td class="fw-semibold">₹ {{ f.total_fuel_cost|intcomma }}</td>
+                                    <td><small class="text-muted">{{ f.fuel_station }}</small></td>
+                                    <td><small>{{ f.odometer_reading|intcomma }} km</small></td>
+                                    <td><small>{{ f.fuel_date|date:"d M Y" }}</small></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No fuel purchases recorded yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Document Watch & Upcoming Workshop Reminders -->
+    <div class="col-xl-4">
+        <!-- Upcoming Maintenance Reminders -->
+        <div class="card border rounded-3 p-3 mb-3 shadow-sm h-auto">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold mb-0 text-danger"><i class="bi bi-clock-history me-1"></i>Upcoming Maintenance</h6>
+                <a href="{% url 'maintenance:maintenance_list' %}" class="small text-primary text-decoration-none fw-semibold">View All</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for m in upcoming_maintenance %}
+                <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-1 border-0 border-bottom">
+                    <div>
+                        <div class="fw-bold text-dark small">{{ m.vehicle.registration_number }} - {{ m.maintenance_type }}</div>
+                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ m.service_date|date:"d M Y" }} &bull; {{ m.workshop_name }}</small>
+                    </div>
+                    <span class="badge bg-{{ m.status_badge_class }}">{{ m.status }}</span>
+                </div>
+                {% empty %}
+                <div class="text-center py-3 text-muted small">No pending workshop appointments.</div>
+                {% endfor %}
+            </div>
         </div>
 
-        <!-- Compliance & Expiry Alerts -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold" style="color: #ea580c;"><i class="bi bi-shield-exclamation me-2"></i>Compliance & Document Watch</h6>
-                <a href="{% url 'safety:safety_dashboard' %}" class="btn btn-sm btn-link text-decoration-none">Safety Center</a>
+        <!-- Compliance & Regulatory Expirations Watch -->
+        <div class="card border rounded-3 p-3 shadow-sm h-auto">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold mb-0 text-warning"><i class="bi bi-shield-exclamation me-1"></i>Compliance & Expiry Watch</h6>
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">30 Days</span>
             </div>
-            <div class="card-body p-3">
-                {% if expiring_insurance or expiring_licenses %}
-                    {% for v in expiring_insurance %}
-                    <div class="alert alert-warning py-2 px-3 mb-2 small d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ v.registration_number }}</strong>: Insurance expires on {{ v.insurance_expiry_date|date:"d M Y" }}
-                        </div>
-                        <span class="badge bg-warning text-dark">Insurance</span>
+            {% if expiring_insurance or expiring_licenses %}
+                {% for v in expiring_insurance %}
+                <div class="alert alert-warning py-2 px-3 mb-2 small d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ v.registration_number }}</strong>: Insurance renewal due on <strong>{{ v.insurance_expiry_date|date:"d M Y" }}</strong>
                     </div>
-                    {% endfor %}
-                    {% for d in expiring_licenses %}
-                    <div class="alert alert-danger py-2 px-3 mb-2 small d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ d.name }}</strong>: Driving licence expires on {{ d.license_expiry_date|date:"d M Y" }}
-                        </div>
-                        <span class="badge bg-danger">Licence</span>
+                    <span class="badge bg-warning text-dark">Insurance</span>
+                </div>
+                {% endfor %}
+                {% for d in expiring_licenses %}
+                <div class="alert alert-danger py-2 px-3 mb-2 small d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ d.name }}</strong>: Driving licence expires on <strong>{{ d.license_expiry_date|date:"d M Y" }}</strong>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-2 text-success small">
-                        <i class="bi bi-shield-check fs-4 d-block mb-1"></i>
-                        All vehicle insurances and driver licences are valid and up to date!
-                    </div>
-                {% endif %}
-            </div>
+                    <span class="badge bg-danger">Licence</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-3 text-success small">
+                    <i class="bi bi-patch-check-fill fs-3 text-success d-block mb-1"></i>
+                    All insurance policies and driver licences are valid and fully compliant!
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -329,7 +623,16 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Status Chart (Doughnut)
+    // Detect theme for chart grid colors
+    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    var gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+    var textColor = isDark ? '#94a3b8' : '#64748b';
+
+    // Chart.js global font
+    Chart.defaults.font.family = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+    Chart.defaults.color = textColor;
+
+    // 1. Fleet Status Distribution (Doughnut)
     var statusCtx = document.getElementById('statusChart').getContext('2d');
     var statusData = JSON.parse('{{ chart_status_data|safe }}');
     new Chart(statusCtx, {
@@ -338,49 +641,47 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: ['Available', 'In Use', 'Maintenance'],
             datasets: [{
                 data: statusData,
-                backgroundColor: ['#16a34a', '#0284c7', '#dc2626'],
+                backgroundColor: ['#10b981', '#0284c7', '#ef4444'],
+                hoverBackgroundColor: ['#059669', '#0369a1', '#dc2626'],
                 borderWidth: 2,
-                borderColor: '#ffffff',
-                hoverOffset: 4
+                borderColor: isDark ? '#1e293b' : '#ffffff',
+                hoverOffset: 6
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { boxWidth: 12, font: { size: 11 } }
-                }
+                legend: { display: false }
             },
-            cutout: '65%'
+            cutout: '72%'
         }
     });
 
-    // 2. Expenses Trend Chart (Line / Bar)
-    var expCtx = document.getElementById('expensesChart').getContext('2d');
-    var monthsLabels = JSON.parse('{{ chart_months|safe }}');
-    var fuelData = JSON.parse('{{ chart_fuel_data|safe }}');
-    var maintData = JSON.parse('{{ chart_maint_data|safe }}');
+    // 2. Fleet Utilization by Vehicle Type (Horizontal Grouped Bar)
+    var utilCtx = document.getElementById('utilizationChart').getContext('2d');
+    var vtypeLabels = JSON.parse('{{ chart_vtype_labels|safe }}');
+    var vtypeCounts = JSON.parse('{{ chart_vtype_counts|safe }}');
+    var vtypeInUse = JSON.parse('{{ chart_vtype_in_use|safe }}');
 
-    new Chart(expCtx, {
+    new Chart(utilCtx, {
         type: 'bar',
         data: {
-            labels: monthsLabels,
+            labels: vtypeLabels,
             datasets: [
                 {
-                    label: 'Fuel Expense (₹)',
-                    data: fuelData,
-                    backgroundColor: 'rgba(2, 132, 199, 0.75)',
+                    label: 'Total Registered',
+                    data: vtypeCounts,
+                    backgroundColor: 'rgba(2, 132, 199, 0.35)',
                     borderColor: '#0284c7',
                     borderWidth: 1,
                     borderRadius: 4
                 },
                 {
-                    label: 'Maintenance Cost (₹)',
-                    data: maintData,
-                    backgroundColor: 'rgba(234, 88, 12, 0.75)',
-                    borderColor: '#ea580c',
+                    label: 'In Use (Active)',
+                    data: vtypeInUse,
+                    backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                    borderColor: '#10b981',
                     borderWidth: 1,
                     borderRadius: 4
                 }
@@ -392,24 +693,143 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        callback: function(value) { return '₹ ' + value.toLocaleString('en-IN'); }
-                    },
-                    grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    ticks: { stepSize: 1 },
+                    grid: { color: gridColor }
                 },
                 x: {
                     grid: { display: false }
                 }
             },
             plugins: {
-                legend: { position: 'top' },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ₹ ' + context.raw.toLocaleString('en-IN', {minimumFractionDigits: 2});
-                        }
-                    }
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 3. Safety Incidents by Severity (Polar Area or Doughnut)
+    var safetyCtx = document.getElementById('safetySeverityChart').getContext('2d');
+    var severityLabels = JSON.parse('{{ chart_severity_labels|safe }}');
+    var severityCounts = JSON.parse('{{ chart_severity_counts|safe }}');
+
+    new Chart(safetyCtx, {
+        type: 'doughnut',
+        data: {
+            labels: severityLabels.length > 0 ? severityLabels : ['No Incidents'],
+            datasets: [{
+                data: severityCounts.length > 0 ? severityCounts : [1],
+                backgroundColor: ['#64748b', '#0284c7', '#f59e0b', '#ef4444'],
+                borderColor: isDark ? '#1e293b' : '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+            },
+            cutout: '60%'
+        }
+    });
+
+    // 4. Monthly Fuel Consumption (Litres & Expense)
+    var fuelCtx = document.getElementById('fuelTrendChart').getContext('2d');
+    var months = JSON.parse('{{ chart_months|safe }}');
+    var fuelQty = JSON.parse('{{ chart_fuel_qty_data|safe }}');
+    var fuelCost = JSON.parse('{{ chart_fuel_cost_data|safe }}');
+
+    new Chart(fuelCtx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Fuel Volume (L)',
+                    data: fuelQty,
+                    backgroundColor: 'rgba(2, 132, 199, 0.75)',
+                    borderColor: '#0284c7',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    yAxisID: 'y'
+                },
+                {
+                    type: 'line',
+                    label: 'Cost (₹)',
+                    data: fuelCost,
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    yAxisID: 'y1'
                 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Litres' },
+                    grid: { color: gridColor }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'Expense (₹)' },
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                        callback: function(v) { return '₹' + v.toLocaleString('en-IN'); }
+                    }
+                },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 5. Maintenance Cost Analysis
+    var maintCtx = document.getElementById('maintenanceCostChart').getContext('2d');
+    var maintData = JSON.parse('{{ chart_maint_data|safe }}');
+
+    new Chart(maintCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Maintenance Expenses (₹)',
+                data: maintData,
+                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                borderColor: '#ef4444',
+                borderWidth: 2,
+                pointBackgroundColor: '#ef4444',
+                pointRadius: 4,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor },
+                    ticks: {
+                        callback: function(v) { return '₹' + v.toLocaleString('en-IN'); }
+                    }
+                },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } }
             }
         }
     });
