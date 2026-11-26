@@ -7,6 +7,7 @@ Student: Pranavraghavendra M R (Reg No: 24UG00220)
 
 from pathlib import Path
 import os
+import shutil
 import dj_database_url
 
 # Load environment variables from .env if present
@@ -95,7 +96,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'transport_fms.wsgi.application'
 
 # Database configuration
-# PostgreSQL support for production via DATABASE_URL; falls back to SQLite for local development
+# Evaluates PostgreSQL via DATABASE_URL if provided; otherwise configures SQLite.
+# On Vercel / serverless runtime with read-only root filesystems, SQLite is copied to and served from
+# writable /tmp storage to support demo operations without throwing read-only database errors.
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -106,12 +109,35 @@ if DATABASE_URL:
         )
     }
 else:
+    IS_VERCEL = os.environ.get('VERCEL') == '1' or 'AWS_LAMBDA_FUNCTION_NAME' in os.environ or os.environ.get('VERCEL_ENV') is not None
+    SOURCE_DB = BASE_DIR / 'db.sqlite3'
+    TMP_DB = Path('/tmp') / 'db.sqlite3'
+
+    if IS_VERCEL or (SOURCE_DB.exists() and not os.access(SOURCE_DB, os.W_OK)):
+        try:
+            Path('/tmp').mkdir(parents=True, exist_ok=True)
+            if SOURCE_DB.exists():
+                if not TMP_DB.exists() or TMP_DB.stat().st_size == 0:
+                    shutil.copy2(SOURCE_DB, TMP_DB)
+        except Exception:
+            pass
+        SQLITE_PATH = TMP_DB
+    else:
+        SQLITE_PATH = SOURCE_DB
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': SQLITE_PATH,
         }
     }
+
+# Session Management:
+# Uses signed-cookie sessions to eliminate database session writes on serverless environments
+# and guarantee authenticated sessions persist reliably across all serverless lambda container instances.
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 86400  # 24 hours
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
